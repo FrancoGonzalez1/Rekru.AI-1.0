@@ -1,0 +1,1374 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Rekru.AI - Resume Analyzer</title>
+    <!-- Tailwind CSS CDN for easy styling -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Orbitron:wght@400;700&display=swap" rel="stylesheet">
+    <!-- Mammoth.js for DOCX parsing -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/mammoth.js/1.4.1/mammoth.browser.min.js"></script>
+    <!-- Marked.js for Markdown parsing -->
+    <script src="https://cdn.jsdelivr.net/npm/marked/marked.min.js"></script>
+    <!-- PDF.js for PDF parsing -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/pdf.js/2.10.377/pdf.min.js"></script>
+    <script>
+        // Set the workerSrc for pdf.js to ensure it can load its worker script
+        pdfjsLib.GlobalWorkerOptions.workerSrc = 'https://cdnjs.cloudflare.com/ajax/libs/pdf.js/2.10.377/pdf.worker.min.js';
+    </script>
+    <style>
+        /* Custom font for a modern look */
+        body {
+            font-family: 'Inter', sans-serif;
+        }
+        /* Smooth scrolling for anchor links */
+        html {
+            scroll-behavior: smooth;
+        }
+        /* Custom font for the logo */
+        .font-orbitron {
+            font-family: 'Orbitron', sans-serif;
+        }
+        /* Style for the drag-and-drop area */
+        .drop-zone {
+            border: 2px dashed #cbd5e0; /* gray-300 */
+            border-radius: 0.5rem; /* rounded-md */
+            padding: 2rem;
+            text-align: center;
+            background-color: #f8fafc; /* gray-50 */
+            transition: all 0.2s ease-in-out;
+        }
+        .drop-zone.hover {
+            border-color: #4f46e5; /* indigo-600 */
+            background-color: #e0e7ff; /* indigo-100 */
+        }
+        /* Loading spinner animation (for single analyzer) */
+        @keyframes spin {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
+        .animate-spin-custom {
+            animation: spin 1s linear infinite;
+        }
+        /* Dark Mode Styles */
+        html.dark {
+            background-color: #1f2937; /* Matches login/signup dark background */
+            color: #f8fafc; /* slate-50 - almost white text for better readability */
+        }
+        html.dark body {
+            background-color: #1f2937; /* Matches login/signup dark background */
+            color: #f8fafc; /* slate-50 */
+        }
+        html.dark header {
+            background-color: #1a202c; /* darker header */
+            box-shadow: 0 4px 10px -2px rgba(0, 0, 0, 0.6), 0 4px 8px -2px rgba(0, 0, 0, 0.3); /* Stronger shadow */
+        }
+        html.dark nav a {
+            color: #e2e8f0; /* light gray links */
+            transition: color 0.3s ease-in-out;
+        }
+        html.dark nav a:hover {
+            color: #9f7aea; /* purple-400 hover */
+        }
+        html.dark section {
+            background-color: #1a202c; /* darker section background */
+            box-shadow: 0 4px 10px -2px rgba(0, 0, 0, 0.6), 0 4px 8px -2px rgba(0, 0, 0, 0.3); /* Stronger shadow */
+        }
+        html.dark .bg-gray-100 { /* Used for internal sections/cards */
+            background-color: #2d3748; /* darker gray-100 */
+        }
+        html.dark .bg-white { /* Used for cards/inner elements */
+            background-color: #2d3748; /* darker white */
+        }
+        html.dark .bg-gray-50 { /* Used for contact form/benefits */
+            background-color: #2d3748; /* darker gray-50 */
+        }
+        html.dark .text-gray-800 {
+            color: #f8fafc; /* slate-50 */
+        }
+        html.dark .text-gray-700 {
+            color: #e2e8f0; /* light gray */
+        }
+        html.dark .text-gray-600 {
+            color: #cbd5e0; /* lighter gray */
+        }
+        html.dark .text-gray-500 {
+            color: #a0aec0; /* medium gray */
+        }
+        html.dark .text-indigo-700 { /* Rekru.AI logo, saved JD links */
+            color: #a78bfa; /* violet-400, more vibrant */
+        }
+        html.dark .text-indigo-800 { /* Section headings */
+            color: #c4b5fd; /* violet-300, more vibrant */
+        }
+        html.dark footer {
+            background-color: #1a202c; /* darker footer */
+        }
+        html.dark input, html.dark textarea, html.dark select {
+            background-color: #4a5568; /* Darker input fields */
+            border-color: #64748b; /* Slate-600 for borders */
+            color: #f8fafc; /* White text in inputs */
+        }
+        html.dark input::placeholder, html.dark textarea::placeholder {
+            color: #cbd5e0; /* Lighter placeholder text */
+        }
+        html.dark .border-gray-400 { /* Analyzer left column border */
+            border-color: #4a5568; /* darker gray border */
+        }
+        html.dark .drop-zone {
+            background-color: #2d3748; /* darker background */
+            border-color: #667eea; /* indigo-400 */
+        }
+        html.dark .drop-zone.hover {
+            border-color: #8b5cf6; /* purple-500 */
+            background-color: #3a475a; /* slightly lighter dark */
+        }
+        html.dark .bg-white.p-3.rounded-md.shadow-sm { /* For saved job description list items */
+            background-color: #2d3748; /* darker */
+        }
+        html.dark .bg-white.p-2.rounded-md.shadow-sm { /* For required skills list items */
+            background-color: #2d3748; /* darker */
+        }
+        html.dark .bg-white.p-6.rounded-lg.shadow-inner { /* For results display */
+            background-color: #2d3748; /* darker */
+        }
+        html.dark .bg-gray-50.p-6.rounded-lg.shadow-inner { /* For batch results display */
+            background-color: #2d3748; /* darker */
+        }
+        html.dark .progress-bar-container {
+            background-color: #4a5568; /* darker progress bar background */
+        }
+        html.dark .progress-bar-fill {
+            background-color: #9f7aea; /* purple-400 */
+            color: white; /* Ensure text is readable on purple */
+        }
+
+        /* Dropdown specific styles */
+        .dropdown-content {
+            display: none;
+            position: absolute;
+            background-color: #f9f9f9;
+            min-width: 160px;
+            box-shadow: 0px 8px 16px 0px rgba(0,0,0,0.2);
+            z-index: 1;
+            border-radius: 0.5rem;
+            overflow: hidden;
+            right: 0; /* Align to the right */
+            left: auto;
+            transform: none;
+        }
+        .dropdown-content a, .dropdown-content button {
+            color: black;
+            padding: 12px 16px;
+            text-decoration: none;
+            display: block;
+            text-align: left;
+        }
+        .dropdown-content a:hover, .dropdown-content button:hover {
+            background-color: #f1f1f1;
+        }
+
+        html.dark .dropdown-content {
+            background-color: #2d3748; /* darker */
+            box-shadow: 0px 8px 16px 0px rgba(0,0,0,0.4);
+        }
+        html.dark .dropdown-content a, html.dark .dropdown-content button {
+            color: #e2e8f0; /* light text */
+        }
+        html.dark .dropdown-content a:hover, html.dark .dropdown-content button:hover {
+            background-color: #4a5568; /* darker hover */
+        }
+
+        /* Sub-dropdown styles */
+        .dropdown-content-sub {
+            display: none;
+            position: absolute;
+            background-color: #f9f9f9;
+            min-width: 120px;
+            box-shadow: 0px 8px 16px 0px rgba(0,0,0,0.2);
+            z-index: 2; /* Higher z-index for sub-dropdown */
+            border-radius: 0.5rem;
+            overflow: hidden;
+        }
+        .dropdown-content-sub a {
+            color: black;
+            padding: 12px 16px;
+            text-decoration: none;
+            display: block;
+            text-align: left;
+        }
+        .dropdown-content-sub a:hover {
+            background-color: #f1f1f1;
+        }
+        html.dark .dropdown-content-sub {
+            background-color: #2d3748;
+        }
+        html.dark .dropdown-content-sub a {
+            color: #e2e8f0;
+        }
+        html.dark .dropdown-content-sub a:hover {
+            background-color: #4a5568;
+        }
+
+        /* Specific border colors for service cards to match original theme */
+        .border-indigo-500 { border-color: #6366f1; }
+        .border-purple-500 { border-color: #a855f7; }
+        .border-pink-500 { border-color: #ec4899; }
+        .border-blue-500 { border-color: #3b82f6; }
+        .border-green-500 { border-color: #22c55e; }
+        .border-yellow-500 { border-color: #eab308; }
+        .border-orange-500 { border-color: #f97316; }
+        .border-cyan-500 { border-color: #06b6d4; }
+        .border-red-500 { border-color: #ef4444; }
+        .border-lime-600 { border-color: #65a30d; } /* For success buttons */
+        .border-yellow-600 { border-color: #ca8a04; } /* For add skill button */
+
+        /* Mobile menu specific styles */
+        .mobile-menu {
+            position: fixed;
+            top: 0;
+            right: 0;
+            height: 100%;
+            width: 250px; /* Adjust width as needed */
+            background-color: #1a202c; /* Dark background for mobile menu */
+            transform: translateX(100%);
+            transition: transform 0.3s ease-in-out;
+            z-index: 1000;
+            padding: 1.5rem;
+            box-shadow: -4px 0 10px rgba(0, 0, 0, 0.6);
+            display: flex;
+            flex-direction: column;
+            align-items: flex-start;
+        }
+
+        .mobile-menu.is-open {
+            transform: translateX(0);
+        }
+
+        .mobile-menu a, .mobile-menu button {
+            color: #e2e8f0; /* Light text for mobile menu links */
+            padding: 0.75rem 0;
+            display: block;
+            width: 100%;
+            text-align: left;
+            border-bottom: 1px solid #4a5568; /* Subtle separator */
+        }
+
+        .mobile-menu a:last-child {
+            border-bottom: none;
+        }
+
+        .mobile-menu .dropdown-content {
+            position: static; /* Override absolute positioning for mobile */
+            transform: none;
+            width: 100%;
+            box-shadow: none;
+            background-color: #2d3748; /* Slightly different background for nested dropdown */
+            margin-top: 0.5rem;
+            border-radius: 0.25rem;
+        }
+        .mobile-menu .dropdown-content a, .mobile-menu .dropdown-content button {
+            padding-left: 1.5rem; /* Indent nested items */
+        }
+        .mobile-menu .dropdown-content-sub {
+            position: static; /* Override absolute positioning for mobile sub-dropdown */
+            transform: none;
+            width: 100%;
+            box-shadow: none;
+            background-color: #2d3748;
+            margin-top: 0.5rem;
+            border-radius: 0.25rem;
+        }
+        .mobile-menu .dropdown-content-sub a {
+            padding-left: 2.5rem; /* Further indent for sub-sub items */
+        }
+    </style>
+</head>
+<body class="bg-gray-50 text-gray-800">
+
+    <!-- Header Section -->
+    <header class="bg-white shadow-md p-4 sticky top-0 z-50 rounded-b-lg">
+        <div class="container mx-auto flex justify-between items-center flex-wrap">
+            <!-- Agency Logo/Name -->
+            <a href="index.html" class="text-3xl font-bold text-indigo-700 hover:text-indigo-900 transition duration-300 ease-in-out font-orbitron mr-auto" data-translate-key="logo-text">
+                Rekru.AI
+            </a>
+            <!-- Navigation Menu -->
+            <nav class="mt-4 md:mt-0 flex items-center flex-grow justify-end hidden md:flex">
+                <ul class="flex space-x-6 items-center">
+                    <!-- Features (next to logo) -->
+                    <li class="relative dropdown">
+                        <button class="text-gray-600 hover:text-indigo-700 font-medium transition duration-300 ease-in-out rounded-md px-3 py-2 flex items-center dropdown-toggle" data-translate-key="nav-features">
+                            Features
+                            <svg class="ml-2 w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"></path></svg>
+                        </button>
+                        <div class="dropdown-content absolute mt-2 w-48 rounded-md shadow-lg bg-white ring-1 ring-black ring-opacity-5 focus:outline-none">
+                            <a href="resume-analyzer.html" class="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-100 dropdown-item" data-translate-key="feature-resume-analyzer">Resume Analyzer</a>
+                            <a href="advanced-analyzer.html" class="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-100 dropdown-item" data-translate-key="feature-advanced-analyzer">Advanced Analyzer</a>
+                            <a href="jd-generator.html" class="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-100 dropdown-item" data-translate-key="feature-jd-generator">Job Description Generator</a>
+                            <a href="ai-sourcer.html" class="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-100 dropdown-item" data-translate-key="feature-ai-sourcer">AI Sourcer/Contact Manager</a>
+                            <a href="jd-poster.html" class="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-100 dropdown-item" data-translate-key="feature-jd-poster">Posting JD in my Platforms</a>
+                            <a href="index.html#jd-enhancer" class="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-100 dropdown-item" data-translate-key="feature-jd-enhancer">✨ JD Enhancer</a>
+                        </div>
+                    </li>
+                    <!-- Spacer to push login/signup/settings to the right -->
+                    <li class="flex-grow"></li>
+                    <!-- Login -->
+                    <li>
+                        <a href="pages/login.html" class="text-gray-600 hover:text-indigo-700 font-medium transition duration-300 ease-in-out rounded-md px-3 py-2" data-translate-key="nav-login">Login</a>
+                    </li>
+                    <!-- Sign Up -->
+                    <li>
+                        <a href="pages/signup.html" class="text-gray-600 hover:text-indigo-700 font-medium transition duration-300 ease-in-out rounded-md px-3 py-2" data-translate-key="nav-signup">Sign Up</a>
+                    </li>
+                    <!-- Settings Button (Gear Icon) -->
+                    <li class="relative dropdown">
+                        <button class="p-2 rounded-full bg-gray-200 dark:bg-gray-700 text-gray-800 dark:text-gray-200 hover:bg-gray-300 dark:hover:bg-gray-600 transition duration-300 dropdown-toggle" id="settingsButton" data-translate-key="nav-settings">
+                            <svg class="h-6 w-6" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10.325 4.317c.426-1.756 2.924-1.756 3.35 0a1.724 1.724 0 002.573 1.066c1.543-.94 3.31.826 2.37 2.37a1.724 1.724 0 001.065 2.572c1.756.426 1.756 2.924 0 3.35a1.724 1.724 0 00-1.066 2.573c.94 1.543-.826 3.31-2.37 2.37a1.724 1.724 0 00-2.572 1.065c-.426 1.756-2.924 1.756-3.35 0a1.724 1.724 0 00-2.573-1.066c-1.543.94-3.31-.826-2.37-2.37a1.724 1.724 0 00-1.065-2.572c-1.756-.426-1.756-2.924 0-3.35a1.724 1.724 0 001.066-2.573c-.94-1.543.826-3.31 2.37-2.37a1.724 1.724 0 002.572-1.065z"></path>
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z"></path>
+                            </svg>
+                        </button>
+                        <div class="dropdown-content absolute mt-2 w-48 rounded-md shadow-lg bg-white ring-1 ring-black ring-opacity-5 focus:outline-none">
+                            <!-- Dark Mode Toggle inside settings dropdown -->
+                            <button id="darkModeToggle" class="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-100 w-full text-left flex items-center justify-between">
+                                <span data-translate-key="settings-dark-mode">Light/Dark Mode</span>
+                                <svg id="sunIcon" class="h-5 w-5" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 3v1m0 16v1m9-9h1M3 12H2m15.325-7.757l-.707-.707M6.343 17.657l-.707.707M16.95 7.05l.707-.707M7.05 16.95l-.707.707M12 7a5 5 0 100 10 5 5 0 000-10z"></path>
+                                </svg>
+                                <svg id="moonIcon" class="h-5 w-5 hidden" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M20.354 15.354A9 9 0 018.646 3.646 9.003 9.003 0 0012 21a9.003 9.003 0 008.354-5.646z"></path>
+                                </svg>
+                            </button>
+                            <!-- Language Settings inside settings dropdown -->
+                            <div class="relative dropdown-sub">
+                                <button class="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-100 w-full text-left flex items-center justify-between dropdown-toggle-sub" data-translate-key="nav-language">
+                                    Language
+                                    <svg class="ml-2 w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7"></path></svg>
+                                </button>
+                                <div class="dropdown-content-sub absolute left-full top-0 mt-0 w-32 rounded-md shadow-lg bg-white ring-1 ring-black ring-opacity-5 focus:outline-none">
+                                    <a href="#" onclick="changeLanguage('en')" class="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-100 dropdown-item">English</a>
+                                    <a href="#" onclick="changeLanguage('es')" class="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-100 dropdown-item">Español</a>
+                                    <a href="#" onclick="changeLanguage('pt')" class="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-100 dropdown-item">Português</a>
+                                </div>
+                            </div>
+                        </div>
+                    </li>
+                </ul>
+            </nav>
+
+            <!-- Mobile Hamburger Button -->
+            <button id="hamburgerButton" class="ml-4 p-2 rounded-full bg-gray-200 dark:bg-gray-700 text-gray-800 dark:text-gray-200 hover:bg-gray-300 dark:hover:bg-gray-600 transition duration-300 md:hidden">
+                <svg class="h-6 w-6" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 6h16M4 12h16M4 18h16"></path>
+                </svg>
+            </button>
+        </div>
+    </header>
+
+    <!-- Mobile Menu -->
+    <div id="mobileMenu" class="mobile-menu">
+        <button id="closeMobileMenu" class="self-end p-2 text-gray-400 hover:text-gray-200">
+            <svg class="h-6 w-6" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path>
+            </svg>
+        </button>
+        
+        <!-- Features for mobile -->
+        <div class="relative w-full">
+            <button class="text-gray-400 hover:text-gray-200 font-medium transition duration-300 ease-in-out rounded-md py-2 flex items-center justify-between w-full mobile-dropdown-toggle" data-translate-key="nav-features">
+                Features
+                <svg class="ml-2 w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"></path></svg>
+            </button>
+            <div class="dropdown-content">
+                <a href="resume-analyzer.html" class="dropdown-item" data-translate-key="feature-resume-analyzer">Resume Analyzer</a>
+                <a href="advanced-analyzer.html" class="dropdown-item" data-translate-key="feature-advanced-analyzer">Advanced Analyzer</a>
+                <a href="jd-generator.html" class="dropdown-item" data-translate-key="feature-jd-generator">Job Description Generator</a>
+                <a href="ai-sourcer.html" class="dropdown-item" data-translate-key="feature-ai-sourcer">AI Sourcer/Contact Manager</a>
+                <a href="jd-poster.html" class="dropdown-item" data-translate-key="feature-jd-poster">Posting JD in my Platforms</a>
+                <a href="index.html#jd-enhancer" class="dropdown-item" data-translate-key="feature-jd-enhancer">✨ JD Enhancer</a>
+            </div>
+        </div>
+
+        <!-- Login for mobile -->
+        <a href="pages/login.html" class="text-gray-400 hover:text-gray-200 font-medium transition duration-300 ease-in-out rounded-md py-2 w-full text-left" data-translate-key="nav-login">Login</a>
+        <!-- Sign Up for mobile -->
+        <a href="pages/signup.html" class="text-gray-400 hover:text-gray-200 font-medium transition duration-300 ease-in-out rounded-md py-2 w-full text-left" data-translate-key="nav-signup">Sign Up</a>
+
+        <!-- Settings for mobile (gear icon will not be shown, just the options) -->
+        <div class="relative w-full mt-4">
+            <button class="text-gray-400 hover:text-gray-200 font-medium transition duration-300 ease-in-out rounded-md py-2 flex items-center justify-between w-full mobile-dropdown-toggle" data-translate-key="nav-settings">
+                Settings
+                <svg class="ml-2 w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"></path></svg>
+            </button>
+            <div class="dropdown-content">
+                <!-- Dark Mode Toggle for mobile -->
+                <button id="mobileDarkModeToggle" class="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-100 w-full text-left flex items-center justify-between">
+                    <span data-translate-key="settings-dark-mode">Light/Dark Mode</span>
+                    <svg id="mobileSunIcon" class="h-5 w-5" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 3v1m0 16v1m9-9h1M3 12H2m15.325-7.757l-.707-.707M6.343 17.657l-.707.707M16.95 7.05l.707-.707M7.05 16.95l-.707.707M12 7a5 5 0 100 10 5 5 0 000-10z"></path>
+                    </svg>
+                    <svg id="mobileMoonIcon" class="h-5 w-5 hidden" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M20.354 15.354A9 9 0 018.646 3.646 9.003 9.003 0 0012 21a9.003 9.003 0 008.354-5.646z"></path>
+                    </svg>
+                </button>
+                <!-- Language for mobile -->
+                <div class="relative dropdown-sub">
+                    <button class="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-100 w-full text-left flex items-center justify-between dropdown-toggle-sub" data-translate-key="nav-language">
+                        Language
+                        <svg class="ml-2 w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7"></path></svg>
+                    </button>
+                    <div class="dropdown-content-sub absolute left-full top-0 mt-0 w-32 rounded-md shadow-lg bg-white ring-1 ring-black ring-opacity-5 focus:outline-none">
+                        <a href="#" onclick="changeLanguage('en')" class="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-100 dropdown-item">English</a>
+                        <a href="#" onclick="changeLanguage('es')" class="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-100 dropdown-item">Español</a>
+                        <a href="#" onclick="changeLanguage('pt')" class="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-100 dropdown-item">Português</a>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- AI Resume Analyzer Section (Integrated) -->
+    <section id="resume-analyzer" class="py-16 px-4 bg-gray-100 rounded-xl shadow-lg mx-auto max-w-5xl mt-12 min-h-[80vh]">
+        <div class="container mx-auto text-center">
+            <h2 class="text-4xl font-bold text-indigo-800 mb-8" data-translate-key="resume-analyzer-heading">AI Resume Analyzer</h2>
+            <p class="text-lg text-gray-700 mb-10 max-w-3xl mx-auto" data-translate-key="resume-analyzer-subheading">
+                Upload a resume and provide the job requirements. Our AI will analyze the profile, check for matches, summarize key information, and provide a recruiter's perspective.
+            </p>
+
+            <div class="flex flex-col md:flex-row gap-8">
+                <!-- Left Column: Saved Job Descriptions & Required Skills (Single Analyzer) -->
+                <div class="w-full md:w-1/3 bg-gray-50 p-6 rounded-lg shadow-md border-t-4 border-gray-400">
+                    <h3 class="text-2xl font-bold text-gray-800 mb-4" data-translate-key="saved-jd-heading">Saved Job Descriptions</h3>
+                    <div class="mb-6">
+                        <input type="text" id="newJobDescriptionName" placeholder="Name for this job description" class="w-full p-2 border border-gray-300 rounded-md focus:outline-none focus:ring-1 focus:ring-indigo-500 mb-2 dark:bg-gray-700 dark:border-gray-600 dark:text-white" data-translate-key="new-jd-name-placeholder">
+                        <button onclick="window.saveJobDescription()" class="w-full bg-green-600 text-white py-2 rounded-md font-semibold hover:bg-green-700 transition duration-300 ease-in-out shadow-md" data-translate-key="save-jd-button">Save Current Description</button>
+                    </div>
+
+                    <ul id="savedJobDescriptionsList" class="space-y-2 mb-8">
+                        <p class="text-gray-500 text-sm" data-translate-key="no-saved-jd">Loading saved job descriptions...</p>
+                    </ul>
+
+                    <h3 class="text-2xl font-bold text-gray-800 mb-4" data-translate-key="add-skill-heading">Required Skills</h3>
+                    <div class="mb-4">
+                        <input type="text" id="newSkillInput" placeholder="Add a required skill" class="w-full p-2 border border-gray-300 rounded-md focus:outline-none focus:ring-1 focus:ring-indigo-500 mb-2 dark:bg-gray-700 dark:border-gray-600 dark:text-white" data-translate-key="new-skill-placeholder">
+                        <button onclick="window.addRequiredSkill()" class="w-full bg-blue-600 text-white py-2 rounded-md font-semibold hover:bg-blue-700 transition duration-300 ease-in-out shadow-md" data-translate-key="add-skill-button">Add Skill</button>
+                    </div>
+                    <ul id="requiredSkillsList" class="space-y-2">
+                        <p class="text-gray-500 text-sm" data-translate-key="no-skills-added">Loading skills...</p>
+                    </ul>
+                </div>
+
+                <!-- Right Column: Analyzer Inputs and Results (Single Analyzer) -->
+                <div class="w-full md:w-2/3 bg-gray-50 p-8 rounded-lg shadow-md">
+                    <div class="mb-6 text-left">
+                        <label for="resumeFile" class="block text-gray-700 text-lg font-semibold mb-2" data-translate-key="upload-resume-label">Upload Resume (PDF, DOCX, TXT):</label>
+                        <!-- Drag and Drop Zone -->
+                        <div id="dropZone" class="drop-zone p-8 rounded-md cursor-pointer flex flex-col items-center justify-center"
+                            ondragover="event.preventDefault(); this.classList.add('hover');"
+                            ondragleave="this.classList.remove('hover');"
+                            ondrop="event.preventDefault(); this.classList.remove('hover'); window.handleFiles(event.dataTransfer.files);">
+                            <svg xmlns="http://www.w3.org/2000/svg" class="h-12 w-12 text-gray-400 mb-2" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M7 16a4 4 0 01-.88-7.903A5 5 0 0115.9 6L16 6a3 3 0 013 3v10a2 2 0 01-2 2H7a2 2 0 01-2-2v-1a1 1 0 011-1h1zm-1-7a3 3 0 00-3 3v1a1 1 0 001 1h1zm11-2a3 3 0 00-3-3h-1a1 1 0 00-1 1v1a1 1 0 001 1h1a3 3 0 003-3z"/>
+                            </svg>
+                            <p class="text-gray-600 mb-2" data-translate-key="drag-drop-text">Drag & drop your resume here, or</p>
+                            <input type="file" id="resumeFile" class="hidden" accept=".pdf,.docx,.txt" onchange="window.handleFiles(this.files)">
+                            <button onclick="document.getElementById('resumeFile').click()" class="bg-indigo-600 text-white py-2 px-4 rounded-md font-semibold hover:bg-indigo-700 transition duration-300 ease-in-out shadow-md" data-translate-key="browse-files-button">Browse Files</button>
+                            <p id="fileNameDisplay" class="mt-2 text-sm text-gray-500"></p>
+                            <div id="fileLoadingIndicator" class="hidden text-center mt-4">
+                                <div class="animate-spin-custom inline-block w-8 h-8 border-4 border-t-4 border-indigo-200 border-t-indigo-700 rounded-full"></div>
+                                <p class="text-gray-600 mt-2" data-translate-key="file-loading-message">Loading file...</p>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="mb-6 text-left">
+                        <label for="jobRequirements" class="block text-gray-700 text-lg font-semibold mb-2" data-translate-key="job-requirements-label">Job Requirements:</label>
+                        <textarea id="jobRequirements" rows="8" class="w-full p-3 border border-gray-300 rounded-md focus:outline-none focus:ring-1 focus:ring-indigo-500 dark:bg-gray-700 dark:border-gray-600 dark:text-white" placeholder="Enter the job description and requirements here..." data-translate-key="job-requirements-placeholder"></textarea>
+                    </div>
+
+                    <button onclick="window.analyzeResume()" class="w-full bg-purple-700 text-white py-3 px-6 rounded-md font-semibold hover:bg-purple-800 transition duration-300 ease-in-out shadow-md transform hover:scale-105" data-translate-key="analyze-resume-button">
+                        Analyze Resume
+                    </button>
+
+                    <div id="analysisLoadingIndicator" class="hidden text-center mt-8">
+                        <div class="animate-spin-custom inline-block w-12 h-12 border-4 border-t-4 border-purple-200 border-t-purple-700 rounded-full"></div>
+                        <p class="text-gray-600 mt-4 text-lg" data-translate-key="analysis-loading-message">Analyzing resume...</p>
+                    </div>
+
+                    <div id="analysisResults" class="mt-8 p-6 bg-white rounded-lg shadow-inner text-left whitespace-pre-wrap hidden dark:bg-gray-700 dark:text-white">
+                        <h3 class="text-2xl font-bold text-gray-800 mb-4 dark:text-white" data-translate-key="analysis-results-heading">Analysis Results:</h3>
+                        <!-- AI analysis results will be displayed here -->
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Message Box (for custom alerts/confirmations) -->
+    <div id="messageBox" class="hidden fixed inset-0 bg-gray-600 bg-opacity-50 flex items-center justify-center z-50 p-4">
+        <div class="bg-white p-6 rounded-lg shadow-xl max-w-sm w-full text-center border-t-4 border-indigo-500 dark:bg-gray-800 dark:text-white dark:border-indigo-700">
+            <p id="messageBoxText" class="text-lg font-medium mb-4"></p>
+            <div class="flex justify-center space-x-4">
+                <button id="messageBoxConfirm" class="hidden bg-green-600 text-white py-2 px-4 rounded-md hover:bg-green-700 transition duration-300">Confirm</button>
+                <button id="messageBoxCancel" class="hidden bg-red-600 text-white py-2 px-4 rounded-md hover:bg-red-700 transition duration-300">Cancel</button>
+                <button id="messageBoxClose" class="bg-indigo-600 text-white py-2 px-4 rounded-md hover:bg-indigo-700 transition duration-300">Close</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Footer Section -->
+    <footer class="bg-white shadow-inner py-8 px-4 mt-12 rounded-t-lg">
+        <div class="container mx-auto text-center text-gray-600 dark:text-gray-400">
+            <p class="mb-4" data-translate-key="footer-copyright">&copy; 2025 Rekru.AI. All rights reserved.</p>
+            <div class="flex justify-center space-x-6">
+                <a href="#" class="hover:text-indigo-700 transition duration-300" data-translate-key="footer-privacy">Privacy Policy</a>
+                <a href="#" class="hover:text-indigo-700 transition duration-300" data-translate-key="footer-terms">Terms of Service</a>
+                <a href="#" class="hover:text-indigo-700 transition duration-300" data-translate-key="footer-sitemap">Sitemap</a>
+            </div>
+        </div>
+    </footer>
+
+    <script type="module">
+        // Firebase SDKs - Moved here to ensure they are loaded and executed after DOM
+        import { initializeApp } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-app.js";
+        import { getAuth, signInAnonymously, signInWithCustomToken, onAuthStateChanged } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-auth.js";
+        import { getFirestore, doc, getDoc, addDoc, setDoc, updateDoc, deleteDoc, onSnapshot, collection, query, where, getDocs } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-firestore.js";
+
+        // Global Firebase variables (Canvas provides these)
+        const appId = typeof __app_id !== 'undefined' ? __app_id : 'default-app-id';
+        const firebaseConfig = typeof __firebase_config !== 'undefined' ? JSON.parse(__firebase_config) : {};
+
+        let app, db, auth, userId;
+
+        // Initialize Firebase and authenticate
+        async function initializeFirebase() {
+            try {
+                app = initializeApp(firebaseConfig);
+                db = getFirestore(app);
+                auth = getAuth(app);
+
+                onAuthStateChanged(auth, async (user) => {
+                    if (user) {
+                        userId = user.uid;
+                        console.log("Firebase authenticated. User ID:", userId);
+                        // Load saved job descriptions and required skills after authentication
+                        window.loadSavedJobDescriptions();
+                        window.loadRequiredSkills();
+                    } else {
+                        // Check if __initial_auth_token !== 'undefined' and is not an empty string
+                        if (typeof __initial_auth_token !== 'undefined' && __initial_auth_token.length > 0) {
+                            try {
+                                await signInWithCustomToken(auth, __initial_auth_token);
+                            } catch (tokenError) {
+                                console.warn("Error with custom token, falling back to anonymous:", tokenError);
+                                const anonymousUser = await signInAnonymously(auth);
+                                userId = anonymousUser.user.uid;
+                                console.log("Signed in anonymously. User ID:", userId);
+                            }
+                        } else {
+                            const anonymousUser = await signInAnonymously(auth);
+                            userId = anonymousUser.user.uid;
+                            console.log("Signed in anonymously. User ID:", userId);
+                        }
+                    }
+                });
+            } catch (error) {
+                console.error("Error initializing Firebase:", error);
+            }
+        }
+
+        // Call Firebase initialization when DOM is ready
+        document.addEventListener('DOMContentLoaded', initializeFirebase);
+
+
+        // --- Firestore Functions for Saved Job Descriptions (Single Analyzer) ---
+        window.saveJobDescription = async () => {
+            if (!userId) {
+                console.error("User not authenticated. Cannot save job description.");
+                window.displayMessageBox(translations[document.documentElement.lang]["auth-required-save-jd"] || 'Please log in or sign up to save job descriptions.', 'error');
+                return;
+            }
+
+            const jobDescriptionName = document.getElementById('newJobDescriptionName').value.trim();
+            const jobDescriptionText = document.getElementById('jobRequirements').value.trim();
+
+            if (!jobDescriptionName || !jobDescriptionText) {
+                window.displayMessageBox(translations[document.documentElement.lang]["provide-jd-name-text"] || 'Please provide both a name and text for the job description.', 'error');
+                return;
+            }
+
+            try {
+                const jobDescriptionsCollectionRef = collection(db, `artifacts/${appId}/users/${userId}/job_descriptions`);
+                await addDoc(jobDescriptionsCollectionRef, {
+                    name: jobDescriptionName,
+                    text: jobDescriptionText,
+                    createdAt: new Date()
+                });
+                document.getElementById('newJobDescriptionName').value = ''; // Clear input
+                window.displayMessageBox(translations[document.documentElement.lang]["jd-saved-success"] || 'Job description saved successfully!', 'info');
+                window.loadSavedJobDescriptions(); // Refresh the list
+            } catch (error) {
+                console.error("Error saving job description:", error);
+                window.displayMessageBox(`${translations[document.documentElement.lang]["error-saving-jd"] || 'Error saving job description'}: ${error.message}`, 'error');
+            }
+        };
+
+        window.loadSavedJobDescriptions = async () => {
+            if (!userId) {
+                console.log("User not authenticated yet. Skipping loading job descriptions.");
+                return;
+            }
+
+            const savedJobDescriptionsList = document.getElementById('savedJobDescriptionsList');
+            savedJobDescriptionsList.innerHTML = `<p class="text-gray-500 text-sm" data-translate-key="no-saved-jd">${translations[document.documentElement.lang]["no-saved-jd"] || 'Loading saved job descriptions...'}</p>`;
+
+            try {
+                const jobDescriptionsCollectionRef = collection(db, `artifacts/${appId}/users/${userId}/job_descriptions`);
+                const q = query(jobDescriptionsCollectionRef);
+                const querySnapshot = await getDocs(q);
+
+                savedJobDescriptionsList.innerHTML = ''; // Clear loading message
+
+                if (querySnapshot.empty) {
+                    savedJobDescriptionsList.innerHTML = `<p class="text-gray-500 text-sm" data-translate-key="no-saved-jd">${translations[document.documentElement.lang]["no-saved-jd"] || 'No saved job descriptions yet.'}</p>`;
+                } else {
+                    querySnapshot.forEach((doc) => {
+                        const data = doc.data();
+                        const li = document.createElement('li');
+                        li.className = 'flex justify-between items-center bg-white p-3 rounded-md shadow-sm mb-2 hover:bg-gray-100 transition duration-150 dark:bg-gray-700 dark:hover:bg-gray-600 dark:text-white';
+                        li.innerHTML = `
+                            <span class="cursor-pointer text-indigo-700 font-medium flex-grow text-left dark:text-indigo-300" data-id="${doc.id}" data-text="${encodeURIComponent(data.text)}">${data.name}</span>
+                            <button class="ml-4 text-red-500 hover:text-red-700 transition duration-150" onclick="window.confirmDeleteJobDescription('${doc.id}')">
+                                <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" viewBox="0 0 20 20" fill="currentColor">
+                                    <path fill-rule="evenodd" d="M9 2a1 1 0 00-.894.553L7.382 4H4a1 1 0 000 2v10a2 2 0 002 2h8a2 2 0 002-2V6a1 1 0 100-2h-3.382l-.724-1.447A1 1 0 0011 2H9zM7 8a1 1 0 012 0v6a1 1 0 11-2 0V8zm6 0a1 1 0 01-2 0v6a1 1 0 112 0V8z" clip-rule="evenodd" />
+                                </svg>
+                            </button>
+                        `;
+                        li.querySelector('span').addEventListener('click', (e) => {
+                            document.getElementById('jobRequirements').value = decodeURIComponent(e.target.dataset.text);
+                            document.getElementById('newJobDescriptionName').value = e.target.textContent.trim(); // Populate name field too
+                        });
+                        savedJobDescriptionsList.appendChild(li);
+                    });
+                }
+                window.changeLanguage(localStorage.getItem('selectedLanguage') || 'en'); // Re-apply translations after loading dynamic content
+            } catch (error) {
+                console.error("Error loading job descriptions:", error);
+                savedJobDescriptionsList.innerHTML = `<p class="text-red-500 text-sm">${translations[document.documentElement.lang]["error-loading-jd"] || 'Error loading job descriptions.'}</p>`;
+            }
+        };
+
+        // Custom confirmation dialog for delete
+        window.confirmDeleteJobDescription = (docId) => {
+            const messageBox = document.getElementById('messageBox');
+            const messageBoxText = document.getElementById('messageBoxText');
+            const messageBoxConfirm = document.getElementById('messageBoxConfirm');
+            const messageBoxCancel = document.getElementById('messageBoxCancel');
+            const messageBoxClose = document.getElementById('messageBoxClose'); // Get reference
+
+            messageBoxText.textContent = translations[document.documentElement.lang]["confirm-delete-jd"] || "Are you sure you want to delete this job description?";
+            messageBoxConfirm.classList.remove('hidden');
+            messageBoxCancel.classList.remove('hidden');
+            messageBoxClose.classList.add('hidden'); // Ensure close is hidden for confirm dialogs
+
+            messageBoxConfirm.onclick = () => {
+                window.deleteJobDescription(docId);
+                messageBox.classList.add('hidden');
+            };
+            messageBoxCancel.onclick = () => {
+                messageBox.classList.add('hidden');
+            };
+            messageBox.classList.remove('hidden');
+        };
+
+        window.deleteJobDescription = async (docId) => {
+            if (!userId) {
+                console.error("User not authenticated. Cannot delete job description.");
+                window.displayMessageBox(translations[document.documentElement.lang]["auth-required-delete-jd"] || 'Please log in or sign up to delete job descriptions.', 'error');
+                return;
+            }
+
+            try {
+                const docRef = doc(db, `artifacts/${appId}/users/${userId}/job_descriptions`, docId);
+                await deleteDoc(docRef);
+                window.displayMessageBox(translations[document.documentElement.lang]["jd-deleted-success"] || 'Job description deleted successfully!', 'info');
+                window.loadSavedJobDescriptions(); // Refresh the list
+            } catch (error) {
+                console.error("Error deleting job description:", error);
+                window.displayMessageBox(`${translations[document.documentElement.lang]["error-deleting-jd"] || 'Error deleting job description'}: ${error.message}`, 'error');
+            }
+        };
+
+        // --- Firestore Functions for Required Skills (Single Analyzer) ---
+        window.addRequiredSkill = async () => {
+            if (!userId) {
+                console.error("User not authenticated. Cannot add skill.");
+                window.displayMessageBox(translations[document.documentElement.lang]["auth-required-add-skill"] || 'Please log in or sign up to add skills.', 'error');
+                return;
+            }
+
+            const skillName = document.getElementById('newSkillInput').value.trim();
+            if (!skillName) {
+                window.displayMessageBox(translations[document.documentElement.lang]["enter-skill"] || 'Please enter a skill to add.', 'error');
+                return;
+            }
+
+            try {
+                const skillsCollectionRef = collection(db, `artifacts/${appId}/users/${userId}/required_skills`);
+                await addDoc(skillsCollectionRef, {
+                    name: skillName,
+                    createdAt: new Date()
+                });
+                document.getElementById('newSkillInput').value = ''; // Clear input
+                window.displayMessageBox(translations[document.documentElement.lang]["skill-added-success"] || 'Skill added successfully!', 'info');
+                window.loadRequiredSkills(); // Refresh the list
+            } catch (error) {
+                console.error("Error adding skill:", error);
+                window.displayMessageBox(`${translations[document.documentElement.lang]["error-adding-skill"] || 'Error adding skill'}: ${error.message}`, 'error');
+            }
+        };
+
+        window.loadRequiredSkills = async () => {
+            if (!userId) {
+                console.log("User not authenticated yet. Skipping loading skills.");
+                return;
+            }
+
+            const requiredSkillsList = document.getElementById('requiredSkillsList');
+            requiredSkillsList.innerHTML = `<p class="text-gray-500 text-sm" data-translate-key="no-skills-added">${translations[document.documentElement.lang]["no-skills-added"] || 'Loading skills...'}</p>`;
+
+            try {
+                const skillsCollectionRef = collection(db, `artifacts/${appId}/users/${userId}/required_skills`);
+                const q = query(skillsCollectionRef);
+                const querySnapshot = await getDocs(q);
+
+                requiredSkillsList.innerHTML = ''; // Clear loading message
+
+                if (querySnapshot.empty) {
+                    requiredSkillsList.innerHTML = `<p class="text-gray-500 text-sm" data-translate-key="no-skills-added">${translations[document.documentElement.lang]["no-skills-added"] || 'No required skills added yet.'}</p>`;
+                } else {
+                    querySnapshot.forEach((doc) => {
+                        const data = doc.data();
+                        const li = document.createElement('li');
+                        li.className = 'flex justify-between items-center bg-white p-2 rounded-md shadow-sm mb-1 text-sm hover:bg-gray-100 transition duration-150 dark:bg-gray-700 dark:hover:bg-gray-600 dark:text-white';
+                        li.innerHTML = `
+                            <span class="text-gray-700 font-medium flex-grow text-left dark:text-white">${data.name}</span>
+                            <button class="ml-2 text-red-500 hover:text-red-700 transition duration-150" onclick="window.confirmDeleteRequiredSkill('${doc.id}')">
+                                <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" viewBox="0 0 20 20" fill="currentColor">
+                                    <path fill-rule="evenodd" d="M9 2a1 1 0 00-.894.553L7.382 4H4a1 1 0 000 2v10a2 2 0 002 2h8a2 2 0 002-2V6a1 1 0 100-2h-3.382l-.724-1.447A1 1 0 0011 2H9zM7 8a1 1 0 012 0v6a1 1 0 11-2 0V8zm6 0a1 1 0 01-2 0v6a1 1 0 112 0V8z" clip-rule="evenodd" />
+                                </svg>
+                            </button>
+                        `;
+                        requiredSkillsList.appendChild(li);
+                    });
+                }
+                window.changeLanguage(localStorage.getItem('selectedLanguage') || 'en'); // Re-apply translations after loading dynamic content
+            } catch (error) {
+                console.error("Error loading skills:", error);
+                requiredSkillsList.innerHTML = `<p class="text-red-500 text-sm">${translations[document.documentElement.lang]["error-loading-skills"] || 'Error loading skills.'}</p>`;
+            }
+        };
+
+        window.confirmDeleteRequiredSkill = (docId) => {
+            const messageBox = document.getElementById('messageBox');
+            const messageBoxText = document.getElementById('messageBoxText');
+            const messageBoxConfirm = document.getElementById('messageBoxConfirm');
+            const messageBoxCancel = document.getElementById('messageBoxCancel');
+            const messageBoxClose = document.getElementById('messageBoxClose'); // Get reference
+
+            messageBoxText.textContent = translations[document.documentElement.lang]["confirm-delete-skill"] || "Are you sure you want to delete this skill?";
+            messageBoxConfirm.classList.remove('hidden');
+            messageBoxCancel.classList.remove('hidden');
+            messageBoxClose.classList.add('hidden'); // Ensure close is hidden for confirm dialogs
+
+            messageBoxConfirm.onclick = () => {
+                window.deleteRequiredSkill(docId);
+                messageBox.classList.add('hidden');
+            };
+            messageBoxCancel.onclick = () => {
+                messageBox.classList.add('hidden');
+            };
+            messageBox.classList.remove('hidden');
+        };
+
+        window.deleteRequiredSkill = async (docId) => {
+            if (!userId) {
+                console.error("User not authenticated. Cannot delete skill.");
+                window.displayMessageBox(translations[document.documentElement.lang]["auth-required-delete-skill"] || 'Please log in or sign up to delete skills.', 'error');
+                return;
+            }
+
+            try {
+                const docRef = doc(db, `artifacts/${appId}/users/${userId}/required_skills`, docId);
+                await deleteDoc(docRef);
+                window.displayMessageBox(translations[document.documentElement.lang]["skill-deleted-success"] || 'Skill deleted successfully!', 'info');
+                window.loadRequiredSkills(); // Refresh the list
+            } catch (error) {
+                console.error("Error deleting skill:", error);
+                window.displayMessageBox(`${translations[document.documentElement.lang]["error-deleting-skill"] || 'Error deleting skill'}: ${error.message}`, 'error');
+            }
+        };
+
+        // Custom message box display function
+        window.displayMessageBox = (message, type = 'info') => {
+            const messageBox = document.getElementById('messageBox');
+            const messageBoxText = document.getElementById('messageBoxText');
+            const messageBoxConfirm = document.getElementById('messageBoxConfirm');
+            const messageBoxCancel = document.getElementById('messageBoxCancel');
+            const messageBoxClose = document.getElementById('messageBoxClose');
+
+            messageBoxText.textContent = message;
+            if (type === 'info' || type === 'error') {
+                messageBoxConfirm.classList.add('hidden');
+                messageBoxCancel.classList.add('hidden');
+                messageBoxClose.classList.remove('hidden');
+                messageBoxClose.focus(); // Set focus to the close button
+            } else { // For confirmation dialogs
+                messageBoxConfirm.classList.remove('hidden');
+                messageBoxCancel.classList.remove('hidden');
+                messageBoxClose.classList.add('hidden');
+                messageBoxConfirm.focus(); // Set focus to the confirm button
+            }
+
+            messageBox.className = `fixed inset-0 bg-gray-600 bg-opacity-50 flex items-center justify-center z-50 p-4 ${type === 'error' ? 'border-red-500' : 'border-indigo-500'}`;
+            messageBox.classList.remove('hidden');
+        };
+
+        // Resume Analyzer Specific Functions
+        let resumeText = '';
+
+        window.handleFiles = async (files) => {
+            const file = files[0];
+            if (!file) {
+                window.displayMessageBox(translations[document.documentElement.lang]["no-file-selected"] || 'No file selected.', 'error');
+                return;
+            }
+
+            const fileNameDisplay = document.getElementById('fileNameDisplay');
+            fileNameDisplay.textContent = `${translations[document.documentElement.lang]["selected-file"] || 'Selected'}: ${file.name}`;
+            document.getElementById('analysisResults').classList.add('hidden'); // Hide previous results
+
+            const reader = new FileReader();
+            const fileExtension = file.name.split('.').pop().toLowerCase();
+
+            document.getElementById('fileLoadingIndicator').classList.remove('hidden');
+
+            reader.onload = async (e) => {
+                try {
+                    if (fileExtension === 'pdf') {
+                        const pdfData = new Uint8Array(e.target.result);
+                        const loadingTask = pdfjsLib.getDocument({ data: pdfData });
+                        const pdf = await loadingTask.promise;
+                        let fullText = '';
+                        for (let i = 1; i <= pdf.numPages; i++) {
+                            const page = await pdf.getPage(i);
+                            const textContent = await page.getTextContent();
+                            fullText += textContent.items.map(item => item.str).join(' ') + '\n';
+                        }
+                        resumeText = fullText;
+                    } else if (fileExtension === 'docx') {
+                        // Check if window.mammoth is available before using it
+                        if (typeof window.mammoth === 'undefined') {
+                            window.displayMessageBox(translations[document.documentElement.lang]["error-processing-file"] || 'Error processing file: DOCX parsing library not available.', 'error');
+                            resumeText = '';
+                            document.getElementById('fileLoadingIndicator').classList.add('hidden');
+                            return;
+                        }
+                        resumeText = await window.mammoth.extractRawText({ arrayBuffer: e.target.result }).then(result => result.value);
+                    } else if (fileExtension === 'txt') {
+                        resumeText = readTextFile(e.target.result);
+                    } else {
+                        window.displayMessageBox(translations[document.documentElement.lang]["unsupported-file-type"] || 'Unsupported file type. Please upload a PDF, DOCX, or TXT file.', 'error');
+                        resumeText = '';
+                    }
+                    document.getElementById('fileLoadingIndicator').classList.add('hidden');
+                } catch (error) {
+                    console.error("Error processing file:", error);
+                    window.displayMessageBox(`${translations[document.documentElement.lang]["error-processing-file"] || 'Error processing file'}: ${error.message}`, 'error');
+                    resumeText = '';
+                    document.getElementById('fileLoadingIndicator').classList.add('hidden');
+                }
+            };
+
+            if (fileExtension === 'docx' || fileExtension === 'pdf') {
+                reader.readAsArrayBuffer(file);
+            } else {
+                reader.readAsText(file);
+            }
+        }
+
+        function readTextFile(text) {
+            return text;
+        }
+
+        window.analyzeResume = async () => {
+            const jobRequirements = document.getElementById('jobRequirements').value.trim();
+            const analysisResults = document.getElementById('analysisResults');
+            const analysisLoadingIndicator = document.getElementById('analysisLoadingIndicator');
+
+            if (!resumeText) {
+                window.displayMessageBox(translations[document.documentElement.lang]["upload-resume-first"] || 'Please upload a resume first.', 'error');
+                return;
+            }
+            if (!jobRequirements) {
+                window.displayMessageBox(translations[document.documentElement.lang]["enter-job-requirements"] || 'Please enter job requirements.', 'error');
+                return;
+            }
+
+            analysisResults.classList.add('hidden');
+            analysisLoadingIndicator.classList.remove('hidden');
+            analysisResults.innerHTML = ''; // Clear previous results
+
+            try {
+                // Fetch required skills from Firestore
+                const skillsCollectionRef = collection(db, `artifacts/${appId}/users/${userId}/required_skills`);
+                const q = query(skillsCollectionRef);
+                const querySnapshot = await getDocs(q);
+                const requiredSkills = [];
+                querySnapshot.forEach((doc) => {
+                    requiredSkills.push(doc.data().name);
+                });
+
+                const prompt = `
+                    You are an expert IT recruiter. Analyze the following resume against the provided job requirements and a list of required skills.
+                    Provide a comprehensive analysis in Markdown format with the following sections:
+
+                    ### 🎯 Match Percentage
+                    Calculate a percentage match based on how well the resume aligns with the job requirements and required skills. Explain your reasoning briefly.
+
+                    ### 📝 Resume Summary
+                    Provide a concise summary of the candidate's key qualifications and experience relevant to the job.
+
+                    ### ✅ Matched Skills
+                    List all skills from the "Required Skills" list that are clearly present in the resume.
+
+                    ### ❌ Missing Skills
+                    List all skills from the "Required Skills" list that are NOT clearly present in the resume.
+
+                    ### 💡 Recruiter's Perspective
+                    Offer a brief, professional perspective on the candidate's suitability, highlighting strengths and potential areas for further inquiry during an interview.
+
+                    ---
+                    **Resume:**
+                    ${resumeText}
+
+                    ---
+                    **Job Requirements:**
+                    ${jobRequirements}
+
+                    ---
+                    **Required Skills (from user's saved list):**
+                    ${requiredSkills.length > 0 ? requiredSkills.join(', ') : 'No specific skills provided.'}
+                `;
+
+                let chatHistory = [];
+                chatHistory.push({ role: "user", parts: [{ text: prompt }] });
+                
+                const payload = { contents: chatHistory };
+                const apiKey = ""; // Canvas will automatically provide the API key
+                const apiUrl = `https://generativelanguage.googleapis.com/v1beta/models/gemini-2.0-flash:generateContent?key=${apiKey}`;
+
+                const response = await fetch(apiUrl, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify(payload)
+                });
+
+                const result = await response.json();
+
+                if (result.candidates && result.candidates.length > 0 &&
+                    result.candidates[0].content && result.candidates[0].content.parts &&
+                    result.candidates[0].content.parts.length > 0) {
+                    const analysisOutput = result.candidates[0].content.parts[0].text;
+                    analysisResults.innerHTML = marked.parse(analysisOutput); // Use marked.js for Markdown rendering
+                    analysisResults.classList.remove('hidden');
+                } else {
+                    analysisResults.textContent = translations[document.documentElement.lang]["analysis-failed"] || "Could not perform resume analysis. Please try again.";
+                    analysisResults.classList.remove('hidden');
+                }
+            } catch (error) {
+                console.error("Error during AI analysis:", error);
+                analysisResults.textContent = `${translations[document.documentElement.lang]["analysis-error"] || 'An error occurred during analysis'}: ${error.message}. ${translations[document.documentElement.lang]["try-again"] || 'Please try again'}.`;
+                analysisResults.classList.remove('hidden');
+            } finally {
+                analysisLoadingIndicator.classList.add('hidden');
+            }
+        }
+
+        // Initialize marked.js
+        marked.setOptions({
+            gfm: true,
+            breaks: true,
+            sanitize: true // Sanitize HTML output
+        });
+
+        // Dark Mode Toggle (copied from main page)
+        const darkModeToggle = document.getElementById('darkModeToggle');
+        const sunIcon = document.getElementById('sunIcon');
+        const moonIcon = document.getElementById('moonIcon');
+        const mobileDarkModeToggle = document.getElementById('mobileDarkModeToggle');
+        const mobileSunIcon = document.getElementById('mobileSunIcon');
+        const mobileMoonIcon = document.getElementById('mobileMoonIcon');
+
+        // Function to apply theme
+        function applyTheme(theme) {
+            if (theme === 'dark') {
+                document.documentElement.classList.add('dark');
+                if (sunIcon) sunIcon.classList.add('hidden');
+                if (moonIcon) moonIcon.classList.remove('hidden');
+                if (mobileSunIcon) mobileSunIcon.classList.add('hidden');
+                if (mobileMoonIcon) mobileMoonIcon.classList.remove('hidden');
+            } else {
+                document.documentElement.classList.remove('dark');
+                if (sunIcon) sunIcon.classList.remove('hidden');
+                if (moonIcon) moonIcon.classList.add('hidden');
+                if (mobileSunIcon) mobileSunIcon.classList.remove('hidden');
+                if (mobileMoonIcon) mobileMoonIcon.classList.add('hidden');
+            }
+        }
+
+        // Initialize theme: Dark mode by default, can be overridden by localStorage
+        document.addEventListener('DOMContentLoaded', () => {
+            const savedTheme = localStorage.getItem('theme');
+            if (savedTheme === 'light') {
+                applyTheme('light');
+            } else {
+                applyTheme('dark'); // Default to dark if no preference or 'dark' saved
+            }
+        });
+
+        // Event listener for desktop dark mode toggle
+        if (darkModeToggle) { // Check if element exists before adding listener
+            darkModeToggle.addEventListener('click', () => {
+                if (document.documentElement.classList.contains('dark')) {
+                    localStorage.setItem('theme', 'light');
+                    applyTheme('light');
+                } else {
+                    localStorage.setItem('theme', 'dark');
+                    applyTheme('dark');
+                }
+            });
+        }
+
+        // Event listener for mobile dark mode toggle
+        if (mobileDarkModeToggle) {
+            mobileDarkModeToggle.addEventListener('click', () => {
+                if (document.documentElement.classList.contains('dark')) {
+                    localStorage.setItem('theme', 'light');
+                    applyTheme('light');
+                } else {
+                    localStorage.setItem('theme', 'dark');
+                    applyTheme('dark');
+                }
+            });
+        }
+
+        // Universal Dropdown Toggles (copied from main page)
+        document.querySelectorAll('.dropdown-toggle').forEach(button => {
+            button.addEventListener('click', function(event) {
+                event.stopPropagation(); // Prevent click from closing immediately
+                const dropdownContent = this.nextElementSibling;
+                // Close other open dropdowns at the same level
+                document.querySelectorAll('.dropdown-content').forEach(content => {
+                    if (content !== dropdownContent && content.closest('.dropdown') === this.closest('.dropdown')) {
+                        content.style.display = 'none';
+                    }
+                });
+                if (dropdownContent) dropdownContent.style.display = dropdownContent.style.display === 'block' ? 'none' : 'block';
+            });
+        });
+
+        // Universal Sub-Dropdown Toggles (copied from main page)
+        document.querySelectorAll('.dropdown-toggle-sub').forEach(button => {
+            button.addEventListener('click', function(event) {
+                event.stopPropagation(); // Prevent click from closing parent dropdown or other sub-dropdowns
+                const dropdownContentSub = this.nextElementSibling;
+                // Close other open sub-dropdowns
+                this.closest('.dropdown-content').querySelectorAll('.dropdown-content-sub').forEach(content => {
+                    if (content !== dropdownContentSub) {
+                        content.style.display = 'none';
+                    }
+                });
+                if (dropdownContentSub) dropdownContentSub.style.display = dropdownContentSub.style.display === 'block' ? 'none' : 'block';
+            });
+        });
+
+        // Close all dropdowns when clicking outside (copied from main page)
+        window.addEventListener('click', function(event) {
+            if (!event.target.matches('.dropdown-toggle') && !event.target.matches('.dropdown-toggle-sub') && !event.target.closest('.dropdown-content') && !event.target.closest('.dropdown-content-sub')) {
+                document.querySelectorAll('.dropdown-content').forEach(content => {
+                    content.style.display = 'none';
+                });
+                document.querySelectorAll('.dropdown-content-sub').forEach(content => {
+                    content.style.display = 'none';
+                });
+            }
+        });
+
+        // Mobile Menu Functionality (copied from main page)
+        const hamburgerButton = document.getElementById('hamburgerButton');
+        const closeMobileMenuButton = document.getElementById('closeMobileMenu');
+        const mobileMenu = document.getElementById('mobileMenu');
+        const mobileDropdownToggles = document.querySelectorAll('.mobile-dropdown-toggle');
+
+        if (hamburgerButton) { // Check if element exists
+            hamburgerButton.addEventListener('click', () => {
+                if (mobileMenu) mobileMenu.classList.add('is-open');
+            });
+        }
+
+        if (closeMobileMenuButton) { // Check if element exists
+            closeMobileMenuButton.addEventListener('click', () => {
+                if (mobileMenu) mobileMenu.classList.remove('is-open');
+            });
+        }
+
+        // Function to close mobile menu
+        window.closeMobileMenu = () => {
+            if (mobileMenu) mobileMenu.classList.remove('is-open');
+        }
+
+        // Close mobile menu when a link is clicked within the mobile menu (for dropdown items)
+        mobileMenu.querySelectorAll('a').forEach(item => {
+            item.addEventListener('click', () => {
+                window.closeMobileMenu();
+            });
+        });
+
+        // Toggle mobile dropdowns (for main level dropdowns in mobile menu like Features, Settings)
+        mobileDropdownToggles.forEach(button => {
+            button.addEventListener('click', function() {
+                const dropdownContent = this.nextElementSibling;
+                if (dropdownContent) dropdownContent.style.display = dropdownContent.style.display === 'block' ? 'none' : 'block';
+            });
+        });
+
+        // Language Translation (copied from main page and updated for this page's specific elements)
+        const translations = {
+            en: {
+                "logo-text": "Rekru.AI",
+                "nav-features": "Features",
+                "feature-resume-analyzer": "Resume Analyzer",
+                "feature-advanced-analyzer": "Advanced Analyzer",
+                "feature-jd-generator": "Job Description Generator",
+                "feature-ai-sourcer": "AI Sourcer/Contact Manager",
+                "feature-jd-poster": "Posting JD in my Platforms",
+                "feature-jd-enhancer": "✨ JD Enhancer",
+                "nav-language": "Language",
+                "nav-login": "Login",
+                "nav-signup": "Sign Up",
+                "nav-settings": "Settings",
+                "settings-dark-mode": "Light/Dark Mode",
+                "resume-analyzer-heading": "AI Resume Analyzer",
+                "resume-analyzer-subheading": "Upload a resume and provide the job requirements. Our AI will analyze the profile, check for matches, summarize key information, and provide a recruiter's perspective.",
+                "saved-jd-heading": "Saved Job Descriptions",
+                "save-jd-button": "Save Current Description",
+                "add-skill-heading": "Required Skills",
+                "add-skill-button": "Add Skill",
+                "upload-resume-label": "Upload Resume (PDF, DOCX, TXT):",
+                "drag-drop-text": "Drag & drop your resume here, or",
+                "browse-files-button": "Browse Files",
+                "job-requirements-label": "Job Requirements:",
+                "analyze-resume-button": "Analyze Resume",
+                "analysis-results-heading": "Analysis Results:",
+                "footer-copyright": "&copy; 2025 Rekru.AI. All rights reserved.",
+                "footer-privacy": "Privacy Policy",
+                "footer-terms": "Terms of Service",
+                "footer-sitemap": "Sitemap",
+                "new-jd-name-placeholder": "Name for this job description",
+                "new-skill-placeholder": "Add a required skill",
+                "job-requirements-placeholder": "Enter the job description and requirements here...",
+                "file-loading-message": "Loading file...",
+                "analysis-loading-message": "Analyzing resume...",
+                "no-saved-jd": "No saved job descriptions yet.",
+                "no-skills-added": "No required skills added yet.",
+                "no-file-selected": "No file selected.",
+                "pdf-not-supported": "PDF analysis is not supported directly in the browser for this version. Please upload a .docx or .txt file.",
+                "unsupported-file-type": "Unsupported file type. Please upload a PDF, DOCX, or TXT file.",
+                "resume-loaded-success": "Resume loaded successfully. You can now analyze it.",
+                "error-processing-file": "Error processing file",
+                "upload-resume-first": "Please upload a resume first.",
+                "enter-job-requirements": "Please enter job requirements.",
+                "analysis-failed": "Could not perform resume analysis. Please try again.",
+                "analysis-error": "An error occurred during analysis",
+                "try-again": "Please try again",
+                "selected-file": "Selected",
+                "confirm-delete-jd": "Are you sure you want to delete this job description?",
+                "jd-deleted-success": "Job description deleted successfully!",
+                "error-deleting-jd": "Error deleting job description",
+                "confirm-delete-skill": "Are you sure you want to delete this skill?",
+                "skill-deleted-success": "Skill deleted successfully!",
+                "error-adding-skill": "Error adding skill",
+                "error-deleting-skill": "Error deleting skill",
+                "auth-required-save-jd": "Please log in or sign up to save job descriptions.",
+                "provide-jd-name-text": "Please provide both a name and text for the job description.",
+                "auth-required-delete-jd": "Please log in or sign up to delete job descriptions.",
+                "error-loading-jd": "Error loading job descriptions.",
+                "auth-required-add-skill": "Please log in or sign up to add skills.",
+                "enter-skill": "Please enter a skill to add.",
+                "auth-required-delete-skill": "Please log in or sign up to delete skills.",
+                "error-loading-skills": "Error loading skills."
+            },
+            es: {
+                "logo-text": "Rekru.AI",
+                "nav-features": "Características",
+                "feature-resume-analyzer": "Analizador de Currículums",
+                "feature-advanced-analyzer": "Analizador Avanzado",
+                "feature-jd-generator": "Generador de Descripciones de Puesto",
+                "feature-ai-sourcer": "Buscador/Gestor de Contactos con IA",
+                "feature-jd-poster": "Publicar Descripciones de Puesto en mis Plataformas",
+                "feature-jd-enhancer": "✨ Mejorador de Descripciones de Puesto",
+                "nav-language": "Idioma",
+                "nav-login": "Iniciar Sesión",
+                "nav-signup": "Registrarse",
+                "nav-settings": "Configuración",
+                "settings-dark-mode": "Modo Claro/Oscuro",
+                "resume-analyzer-heading": "Analizador de Currículums con IA",
+                "resume-analyzer-subheading": "Sube un currículum y proporciona los requisitos del puesto. Nuestra IA analizará el perfil, buscará coincidencias, resumirá la información clave y ofrecerá una perspectiva de reclutador.",
+                "saved-jd-heading": "Descripciones de Puesto Guardadas",
+                "save-jd-button": "Guardar Descripción Actual",
+                "add-skill-heading": "Habilidades Requeridas",
+                "add-skill-button": "Añadir Habilidad",
+                "upload-resume-label": "Subir Currículum (PDF, DOCX, TXT):",
+                "drag-drop-text": "Arrastra y suelta tu currículum aquí, o",
+                "browse-files-button": "Explorar Archivos",
+                "job-requirements-label": "Requisitos del Puesto:",
+                "analyze-resume-button": "Analizar Currículum",
+                "analysis-results-heading": "Resultados del Análisis:",
+                "footer-copyright": "&copy; 2025 Rekru.AI. Todos los derechos reservados.",
+                "footer-privacy": "Política de Privacidad",
+                "footer-terms": "Términos de Servicio",
+                "footer-sitemap": "Mapa del Sitio",
+                "new-jd-name-placeholder": "Nombre para esta descripción de puesto",
+                "new-skill-placeholder": "Añadir una habilidad requerida",
+                "job-requirements-placeholder": "Introduce la descripción del puesto y los requisitos aquí...",
+                "file-loading-message": "Cargando archivo...",
+                "analysis-loading-message": "Analizando currículum...",
+                "no-saved-jd": "No hay descripciones de puesto guardadas aún.",
+                "no-skills-added": "No se han añadido habilidades requeridas aún.",
+                "no-file-selected": "No se ha seleccionado ningún archivo.",
+                "pdf-not-supported": "El análisis de PDF no es compatible directamente en el navegador para esta versión. Sube un archivo .docx o .txt.",
+                "unsupported-file-type": "Tipo de archivo no compatible. Sube un archivo PDF, DOCX o TXT.",
+                "resume-loaded-success": "Currículum cargado con éxito. Ahora puedes analizarlo.",
+                "error-processing-file": "Error al procesar el archivo",
+                "upload-resume-first": "Por favor, sube un currículum primero.",
+                "enter-job-requirements": "Por favor, introduce los requisitos del puesto.",
+                "analysis-failed": "No se pudo realizar el análisis del currículum. Inténtalo de nuevo.",
+                "analysis-error": "Ocurrió un error durante el análisis",
+                "try-again": "Inténtalo de nuevo",
+                "selected-file": "Seleccionado",
+                "confirm-delete-jd": "¿Estás seguro de que quieres eliminar esta descripción de puesto?",
+                "jd-deleted-success": "¡Descripción de puesto eliminada con éxito!",
+                "error-deleting-jd": "Error al eliminar la descripción de puesto",
+                "confirm-delete-skill": "¿Estás seguro de que quieres eliminar esta habilidad?",
+                "skill-deleted-success": "¡Habilidad eliminada con éxito!",
+                "error-adding-skill": "Error al añadir habilidad",
+                "error-deleting-skill": "Error al eliminar habilidad",
+                "auth-required-save-jd": "Por favor, inicia sesión o regístrate para guardar descripciones de puesto.",
+                "provide-jd-name-text": "Por favor, proporciona un nombre y texto para la descripción de puesto.",
+                "auth-required-delete-jd": "Por favor, inicia sesión o regístrate para eliminar descripciones de puesto.",
+                "error-loading-jd": "Error al cargar las descripciones de puesto.",
+                "auth-required-add-skill": "Por favor, inicia sesión o regístrate para añadir habilidades.",
+                "enter-skill": "Por favor, introduce una habilidad para añadir.",
+                "auth-required-delete-skill": "Por favor, inicia sesión o regístrate para eliminar habilidades.",
+                "error-loading-skills": "Error al cargar las habilidades."
+            },
+            pt: {
+                "logo-text": "Rekru.AI",
+                "nav-features": "Recursos",
+                "feature-resume-analyzer": "Analisador de Currículos",
+                "feature-advanced-analyzer": "Analisador Avançado",
+                "feature-jd-generator": "Gerador de Descrição de Cargo",
+                "feature-ai-sourcer": "AI Sourcer/Gerenciador de Contatos",
+                "feature-jd-poster": "Publicar Descrição de Cargo nas Minhas Plataformas",
+                "feature-jd-enhancer": "✨ Otimizador de Descrição de Cargo",
+                "nav-language": "Idioma",
+                "nav-login": "Entrar",
+                "nav-signup": "Cadastrar-se",
+                "nav-settings": "Configurações",
+                "settings-dark-mode": "Modo Claro/Escuro",
+                "resume-analyzer-heading": "Analisador de Currículos com IA",
+                "resume-analyzer-subheading": "Faça upload de um currículo e forneça os requisitos do cargo. Nossa IA analisará o perfil, verificará correspondências, resumirá informações-chave e fornecerá uma perspectiva de recrutador.",
+                "saved-jd-heading": "Descrições de Cargo Salvas",
+                "save-jd-button": "Salvar Descrição Atual",
+                "add-skill-heading": "Habilidades Necessárias",
+                "add-skill-button": "Adicionar Habilidade",
+                "upload-resume-label": "Fazer Upload do Currículo (PDF, DOCX, TXT):",
+                "drag-drop-text": "Arraste e solte seu currículo aqui, ou",
+                "browse-files-button": "Procurar Arquivos",
+                "job-requirements-label": "Requisitos do Cargo:",
+                "analyze-resume-button": "Analisar Currículo",
+                "analysis-results-heading": "Resultados da Análise:",
+                "footer-copyright": "&copy; 2025 Rekru.AI. Todos os direitos reservados.",
+                "footer-privacy": "Política de Privacidade",
+                "footer-terms": "Termos de Serviço",
+                "footer-sitemap": "Mapa do Site",
+                "new-jd-name-placeholder": "Nome para esta descrição de cargo",
+                "new-skill-placeholder": "Adicionar uma habilidade necessária",
+                "job-requirements-placeholder": "Insira a descrição do cargo e os requisitos aqui...",
+                "file-loading-message": "Carregando arquivo...",
+                "analysis-loading-message": "Analizando currículo...",
+                "no-saved-jd": "Nenhuma descrição de cargo salva ainda.",
+                "no-skills-added": "Nenhuma habilidade necessária adicionada ainda.",
+                "no-file-selected": "Nenhum arquivo selecionado.",
+                "pdf-not-supported": "A análise de PDF não é suportada diretamente no navegador para esta versão. Faça upload de um arquivo .docx ou .txt.",
+                "unsupported-file-type": "Tipo de arquivo não suportado. Faça upload de um arquivo PDF, DOCX ou TXT.",
+                "resume-loaded-success": "Currículo carregado com sucesso. Agora você pode analisá-lo.",
+                "error-processing-file": "Erro ao processar o arquivo",
+                "upload-resume-first": "Por favor, faça upload de um currículo primeiro.",
+                "enter-job-requirements": "Por favor, insira os requisitos do cargo.",
+                "analysis-failed": "Não foi possível realizar a análise do currículo. Tente novamente.",
+                "analysis-error": "Ocorreu um erro durante a análise",
+                "try-again": "Tente novamente",
+                "selected-file": "Seleccionado",
+                "confirm-delete-jd": "Tem certeza de que deseja excluir esta descrição de cargo?",
+                "jd-deleted-success": "Descrição de cargo excluída com sucesso!",
+                "error-deleting-jd": "Erro ao excluir descrição de cargo",
+                "confirm-delete-skill": "Tem certeza de que deseja excluir esta habilidade?",
+                "skill-deleted-success": "Habilidade excluída com sucesso!",
+                "error-adding-skill": "Erro ao adicionar habilidade",
+                "error-deleting-skill": "Erro ao excluir habilidade",
+                "auth-required-save-jd": "Por favor, faça login ou cadastre-se para salvar descrições de cargo.",
+                "provide-jd-name-text": "Por favor, forneça um nome e texto para a descrição de cargo.",
+                "auth-required-delete-jd": "Por favor, faça login ou cadastre-se para excluir descrições de cargo.",
+                "error-loading-jd": "Erro ao carregar as descrições de cargo.",
+                "auth-required-add-skill": "Por favor, faça login ou cadastre-se para adicionar habilidades.",
+                "enter-skill": "Por favor, insira uma habilidade para adicionar.",
+                "auth-required-delete-skill": "Por favor, faça login ou cadastre-se para excluir habilidades.",
+                "error-loading-skills": "Erro ao carregar as habilidades."
+            }
+        };
+
+        window.changeLanguage = (lang) => {
+            const elements = document.querySelectorAll('[data-translate-key]');
+            elements.forEach(element => {
+                const key = element.getAttribute('data-translate-key');
+                if (translations[lang] && translations[lang][key]) {
+                    if (element.tagName === 'INPUT' || element.tagName === 'TEXTAREA') {
+                        element.placeholder = translations[lang][key];
+                    } else {
+                        element.textContent = translations[lang][key];
+                    }
+                }
+            });
+            document.documentElement.lang = lang;
+            localStorage.setItem('selectedLanguage', lang);
+        }
+
+        document.addEventListener('DOMContentLoaded', () => {
+            const savedLanguage = localStorage.getItem('selectedLanguage') || 'en';
+            window.changeLanguage(savedLanguage);
+
+            // Attach event listener for the message box close button
+            const messageBoxClose = document.getElementById('messageBoxClose');
+            if (messageBoxClose) {
+                messageBoxClose.addEventListener('click', () => {
+                    document.getElementById('messageBox').classList.add('hidden');
+                });
+            }
+        });
+    </script>
+</body>
+</html>
