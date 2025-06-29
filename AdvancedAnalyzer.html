@@ -1,0 +1,1669 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Rekru.AI - Advanced Analyzer</title>
+    <!-- Tailwind CSS CDN for easy styling -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Orbitron:wght@400;700&display=swap" rel="stylesheet">
+    <!-- Mammoth.js for DOCX parsing -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/mammoth.js/1.4.1/mammoth.browser.min.js"></script>
+    <!-- Marked.js for Markdown parsing (for displaying AI results) -->
+    <script src="https://cdn.jsdelivr.net/npm/marked/marked.min.js"></script>
+    <style>
+        /* Custom font for a modern look */
+        body {
+            font-family: 'Inter', sans-serif;
+        }
+        /* Smooth scrolling for anchor links */
+        html {
+            scroll-behavior: smooth;
+        }
+        /* Custom font for the logo */
+        .font-orbitron {
+            font-family: 'Orbitron', sans-serif;
+        }
+        /* Style for the drag-and-drop area */
+        .drop-zone {
+            border: 2px dashed #cbd5e0; /* gray-300 */
+            border-radius: 0.5rem; /* rounded-md */
+            padding: 2rem;
+            text-align: center;
+            background-color: #f8fafc; /* gray-50 */
+            transition: all 0.2s ease-in-out;
+        }
+        .drop-zone.hover {
+            border-color: #4f46e5; /* indigo-600 */
+            background-color: #e0e7ff; /* indigo-100 */
+        }
+        /* Progress bar styles */
+        .progress-bar-container {
+            width: 100%;
+            background-color: #e2e8f0; /* gray-200 */
+            border-radius: 9999px; /* full rounded */
+            overflow: hidden;
+            height: 1.5rem; /* h-6 */
+        }
+        .progress-bar-fill {
+            height: 100%;
+            width: 0%;
+            background-color: #8b5cf6; /* purple-500 */
+            border-radius: 9999px; /* full rounded */
+            transition: width 0.3s ease-in-out;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: white;
+            font-weight: bold;
+            font-size: 0.875rem; /* text-sm */
+        }
+
+        /* Dark Mode Styles - Consistent with other pages */
+        html.dark {
+            background-color: #1f2937; /* Matches login/signup dark background */
+            color: #f8fafc; /* slate-50 - almost white text for better readability */
+        }
+        html.dark body {
+            background-color: #1f2937; /* Matches login/signup dark background */
+            color: #f8fafc; /* slate-50 */
+        }
+        html.dark header {
+            background-color: #1a202c; /* darker header */
+            box-shadow: 0 4px 10px -2px rgba(0, 0, 0, 0.6), 0 4px 8px -2px rgba(0, 0, 0, 0.3); /* Stronger shadow */
+        }
+        html.dark nav a {
+            color: #e2e8f0; /* light gray links */
+            transition: color 0.3s ease-in-out;
+        }
+        html.dark nav a:hover {
+            color: #9f7aea; /* purple-400 hover */
+        }
+        html.dark section {
+            background-color: #1a202c; /* darker section background */
+            box-shadow: 0 4px 10px -2px rgba(0, 0, 0, 0.6), 0 4px 8px -2px rgba(0, 0, 0, 0.3); /* Stronger shadow */
+        }
+        html.dark .bg-gray-100 { /* Used for internal sections/cards */
+            background-color: #2d3748; /* darker gray-100 */
+        }
+        html.dark .bg-white { /* Used for cards/inner elements */
+            background-color: #2d3748; /* darker white */
+        }
+        html.dark .bg-gray-50 { /* Used for contact form/benefits */
+            background-color: #2d3748; /* darker gray-50 */
+        }
+        html.dark .text-gray-800 {
+            color: #f8fafc; /* slate-50 */
+        }
+        html.dark .text-gray-700 {
+            color: #e2e8f0; /* light gray */
+        }
+        html.dark .text-gray-600 {
+            color: #cbd5e0; /* lighter gray */
+        }
+        html.dark .text-gray-500 {
+            color: #a0aec0; /* medium gray */
+        }
+        html.dark .text-indigo-700 { /* Rekru.AI logo, saved JD links */
+            color: #a78bfa; /* violet-400, more vibrant */
+        }
+        html.dark .text-indigo-800 { /* Section headings */
+            color: #c4b5fd; /* violet-300, more vibrant */
+        }
+        html.dark .text-purple-700 { /* Analyze Candidates button */
+            color: #d8b4fe; /* purple-300 */
+        }
+        html.dark .border-gray-400 { /* Analyzer left column border */
+            border-color: #4a5568; /* darker gray border */
+        }
+        html.dark .drop-zone {
+            background-color: #2d3748; /* darker background */
+            border-color: #667eea; /* indigo-400 */
+        }
+        html.dark .drop-zone.hover {
+            border-color: #8b5cf6; /* purple-500 */
+            background-color: #3a475a; /* slightly lighter dark */
+        }
+        html.dark input, html.dark textarea, html.dark select {
+            background-color: #4a5568; /* darker input background */
+            border-color: #64748b; /* indigo-400 */
+            color: #f8fafc; /* light text */
+        }
+        html.dark input::placeholder, html.dark textarea::placeholder {
+            color: #a0aec0; /* lighter placeholder */
+        }
+        html.dark .bg-white.p-3.rounded-md.shadow-sm { /* For saved job description list items */
+            background-color: #2d3748; /* darker */
+        }
+        html.dark .bg-white.p-2.rounded-md.shadow-sm { /* For required skills list items */
+            background-color: #2d3748; /* darker */
+        }
+        html.dark .bg-white.p-6.rounded-lg.shadow-inner { /* For results display */
+            background-color: #2d3748; /* darker */
+        }
+        html.dark .bg-gray-50.p-6.rounded-lg.shadow-inner { /* For batch results display */
+            background-color: #2d3748; /* darker */
+        }
+        html.dark footer {
+            background-color: #1a202c; /* darker footer */
+        }
+        html.dark .progress-bar-container {
+            background-color: #4a5568; /* darker progress bar background */
+        }
+        html.dark .progress-bar-fill {
+            background-color: #9f7aea; /* purple-400 */
+            color: white; /* Ensure text is readable on purple */
+        }
+        /* Dropdown specific styles */
+        .dropdown-content {
+            display: none;
+            position: absolute;
+            background-color: #f9f9f9;
+            min-width: 160px;
+            box-shadow: 0px 8px 16px 0px rgba(0,0,0,0.2);
+            z-index: 1;
+            border-radius: 0.5rem;
+            overflow: hidden;
+            right: 0; /* Align to the right */
+            left: auto;
+            transform: none;
+        }
+        .dropdown-content a, .dropdown-content button {
+            color: black;
+            padding: 12px 16px;
+            text-decoration: none;
+            display: block;
+            text-align: left;
+        }
+        .dropdown-content a:hover, .dropdown-content button:hover {
+            background-color: #f1f1f1;
+        }
+        html.dark .dropdown-content {
+            background-color: #2d3748; /* darker */
+            box-shadow: 0px 8px 16px 0px rgba(0,0,0,0.4);
+        }
+        html.dark .dropdown-content a, html.dark .dropdown-content button {
+            color: #e2e8f0; /* light text */
+        }
+        html.dark .dropdown-content a:hover, html.dark .dropdown-content button:hover {
+            background-color: #4a5568; /* darker hover */
+        }
+
+        /* Sub-dropdown styles */
+        .dropdown-content-sub {
+            display: none;
+            position: absolute;
+            background-color: #f9f9f9;
+            min-width: 120px;
+            box-shadow: 0px 8px 16px 0px rgba(0,0,0,0.2);
+            z-index: 2; /* Higher z-index for sub-dropdown */
+            border-radius: 0.5rem;
+            overflow: hidden;
+        }
+        .dropdown-content-sub a {
+            color: black;
+            padding: 12px 16px;
+            text-decoration: none;
+            display: block;
+            text-align: left;
+        }
+        .dropdown-content-sub a:hover {
+            background-color: #f1f1f1;
+        }
+        html.dark .dropdown-content-sub {
+            background-color: #2d3748;
+        }
+        html.dark .dropdown-content-sub a {
+            color: #e2e8f0;
+        }
+        html.dark .dropdown-content-sub a:hover {
+            background-color: #4a5568;
+        }
+
+        /* Dashboard grid layout */
+        .dashboard-grid {
+            display: grid;
+            grid-template-columns: 1.5fr 0.5fr 0.5fr 1fr; /* Adjusted column widths */
+            gap: 1rem;
+            align-items: center;
+            padding: 0.75rem 1rem;
+            border-bottom: 1px solid #e2e8f0; /* gray-200 */
+        }
+        html.dark .dashboard-grid {
+            border-bottom: 1px solid #4a5568; /* darker gray border */
+        }
+        .dashboard-grid-header {
+            font-weight: bold;
+            color: #4a5568; /* gray-700 */
+            font-size: 0.875rem; /* text-sm */
+            text-transform: uppercase;
+        }
+        html.dark .dashboard-grid-header {
+            color: #a0aec0; /* lighter gray */
+        }
+        .dashboard-grid-row {
+            background-color: #ffffff; /* white */
+            border-radius: 0.5rem;
+            box-shadow: 0 1px 2px 0 rgba(0, 0, 0, 0.05);
+            margin-bottom: 0.5rem;
+            transition: all 0.2s ease-in-out;
+        }
+        html.dark .dashboard-grid-row {
+            background-color: #2d3748; /* darker white */
+            box-shadow: 0 1px 2px 0 rgba(0, 0, 0, 0.2);
+        }
+        .dashboard-grid-row:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06);
+        }
+        html.dark .dashboard-grid-row:hover {
+            box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.3), 0 2px 4px -1px rgba(0, 0, 0, 0.1);
+        }
+
+        /* Mobile menu specific styles */
+        .mobile-menu {
+            position: fixed;
+            top: 0;
+            right: 0;
+            height: 100%;
+            width: 250px; /* Adjust width as needed */
+            background-color: #1a202c; /* Dark background for mobile menu */
+            transform: translateX(100%);
+            transition: transform 0.3s ease-in-out;
+            z-index: 1000;
+            padding: 1.5rem;
+            box-shadow: -4px 0 10px rgba(0, 0, 0, 0.6);
+            display: flex;
+            flex-direction: column;
+            align-items: flex-start;
+        }
+
+        .mobile-menu.is-open {
+            transform: translateX(0);
+        }
+
+        .mobile-menu a, .mobile-menu button {
+            color: #e2e8f0; /* Light text for mobile menu links */
+            padding: 0.75rem 0;
+            display: block;
+            width: 100%;
+            text-align: left;
+            border-bottom: 1px solid #4a5568; /* Subtle separator */
+        }
+
+        .mobile-menu a:last-child {
+            border-bottom: none;
+        }
+
+        .mobile-menu .dropdown-content {
+            position: static; /* Override absolute positioning for mobile */
+            transform: none;
+            width: 100%;
+            box-shadow: none;
+            background-color: #2d3748; /* Slightly different background for nested dropdown */
+            margin-top: 0.5rem;
+            border-radius: 0.25rem;
+        }
+        .mobile-menu .dropdown-content a, .mobile-menu .dropdown-content button {
+            padding-left: 1.5rem; /* Indent nested items */
+        }
+        .mobile-menu .dropdown-content-sub {
+            position: static; /* Override absolute positioning for mobile sub-dropdown */
+            transform: none;
+            width: 100%;
+            box-shadow: none;
+            background-color: #2d3748;
+            margin-top: 0.5rem;
+            border-radius: 0.25rem;
+        }
+        .mobile-menu .dropdown-content-sub a {
+            padding-left: 2.5rem; /* Further indent for sub-sub items */
+        }
+    </style>
+</head>
+<body class="bg-gray-50 text-gray-800">
+
+    <!-- Header Section -->
+    <header class="bg-white shadow-md p-4 sticky top-0 z-50 rounded-b-lg">
+        <div class="container mx-auto flex justify-between items-center flex-wrap">
+            <!-- Agency Logo/Name -->
+            <a href="index.html" class="text-3xl font-bold text-indigo-700 hover:text-indigo-900 transition duration-300 ease-in-out font-orbitron mr-auto" data-translate-key="logo-text">
+                Rekru.AI
+            </a>
+            <!-- Navigation Menu -->
+            <nav class="mt-4 md:mt-0 flex items-center flex-grow justify-end hidden md:flex">
+                <ul class="flex space-x-6 items-center">
+                    <!-- Features (next to logo) -->
+                    <li class="relative dropdown">
+                        <button class="text-gray-600 hover:text-indigo-700 font-medium transition duration-300 ease-in-out rounded-md px-3 py-2 flex items-center dropdown-toggle" data-translate-key="nav-features">
+                            Features
+                            <svg class="ml-2 w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"></path></svg>
+                        </button>
+                        <div class="dropdown-content absolute mt-2 w-48 rounded-md shadow-lg bg-white ring-1 ring-black ring-opacity-5 focus:outline-none">
+                            <a href="resume-analyzer.html" class="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-100 dropdown-item" data-translate-key="feature-resume-analyzer">Resume Analyzer</a>
+                            <a href="advanced-analyzer.html" class="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-100 dropdown-item" data-translate-key="feature-advanced-analyzer">Advanced Analyzer</a>
+                            <a href="jd-generator.html" class="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-100 dropdown-item" data-translate-key="feature-jd-generator">Job Description Generator</a>
+                            <a href="ai-sourcer.html" class="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-100 dropdown-item" data-translate-key="feature-ai-sourcer">AI Sourcer/Contact Manager</a>
+                            <a href="jd-poster.html" class="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-100 dropdown-item" data-translate-key="feature-jd-poster">Posting JD in my Platforms</a>
+                            <a href="index.html#jd-enhancer" class="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-100 dropdown-item" data-translate-key="feature-jd-enhancer">✨ JD Enhancer</a>
+                        </div>
+                    </li>
+                    <!-- Spacer to push login/signup/settings to the right -->
+                    <li class="flex-grow"></li>
+                    <!-- Login -->
+                    <li>
+                        <a href="pages/login.html" class="text-gray-600 hover:text-indigo-700 font-medium transition duration-300 ease-in-out rounded-md px-3 py-2" data-translate-key="nav-login">Login</a>
+                    </li>
+                    <!-- Sign Up -->
+                    <li>
+                        <a href="pages/signup.html" class="text-gray-600 hover:text-indigo-700 font-medium transition duration-300 ease-in-out rounded-md px-3 py-2" data-translate-key="nav-signup">Sign Up</a>
+                    </li>
+                    <!-- Settings Button (Gear Icon) -->
+                    <li class="relative dropdown">
+                        <button class="p-2 rounded-full bg-gray-200 dark:bg-gray-700 text-gray-800 dark:text-gray-200 hover:bg-gray-300 dark:hover:bg-gray-600 transition duration-300 dropdown-toggle" id="settingsButton" data-translate-key="nav-settings">
+                            <svg class="h-6 w-6" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10.325 4.317c.426-1.756 2.924-1.756 3.35 0a1.724 1.724 0 002.573 1.066c1.543-.94 3.31.826 2.37 2.37a1.724 1.724 0 001.065 2.572c1.756.426 1.756 2.924 0 3.35a1.724 1.724 0 00-1.066 2.573c.94 1.543-.826 3.31-2.37 2.37a1.724 1.724 0 00-2.572 1.065c-.426 1.756-2.924 1.756-3.35 0a1.724 1.724 0 00-2.573-1.066c-1.543.94-3.31-.826-2.37-2.37a1.724 1.724 0 00-1.065-2.572c-1.756-.426-1.756-2.924 0-3.35a1.724 1.724 0 001.066-2.573c-.94-1.543.826-3.31 2.37-2.37a1.724 1.724 0 002.572-1.065z"></path>
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z"></path>
+                            </svg>
+                        </button>
+                        <div class="dropdown-content absolute mt-2 w-48 rounded-md shadow-lg bg-white ring-1 ring-black ring-opacity-5 focus:outline-none">
+                            <!-- Dark Mode Toggle inside settings dropdown -->
+                            <button id="darkModeToggle" class="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-100 w-full text-left flex items-center justify-between">
+                                <span data-translate-key="settings-dark-mode">Light/Dark Mode</span>
+                                <svg id="sunIcon" class="h-5 w-5" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 3v1m0 16v1m9-9h1M3 12H2m15.325-7.757l-.707-.707M6.343 17.657l-.707.707M16.95 7.05l.707-.707M7.05 16.95l-.707.707M12 7a5 5 0 100 10 5 5 0 000-10z"></path>
+                                </svg>
+                                <svg id="moonIcon" class="h-5 w-5 hidden" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M20.354 15.354A9 9 0 018.646 3.646 9.003 9.003 0 0012 21a9.003 9.003 0 008.354-5.646z"></path>
+                                </svg>
+                            </button>
+                            <!-- Language Settings inside settings dropdown -->
+                            <div class="relative dropdown-sub">
+                                <button class="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-100 w-full text-left flex items-center justify-between dropdown-toggle-sub" data-translate-key="nav-language">
+                                    Language
+                                    <svg class="ml-2 w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7"></path></svg>
+                                </button>
+                                <div class="dropdown-content-sub absolute left-full top-0 mt-0 w-32 rounded-md shadow-lg bg-white ring-1 ring-black ring-opacity-5 focus:outline-none">
+                                    <a href="#" onclick="changeLanguage('en')" class="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-100 dropdown-item">English</a>
+                                    <a href="#" onclick="changeLanguage('es')" class="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-100 dropdown-item">Español</a>
+                                    <a href="#" onclick="changeLanguage('pt')" class="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-100 dropdown-item">Português</a>
+                                </div>
+                            </div>
+                        </div>
+                    </li>
+                </ul>
+            </nav>
+
+            <!-- Mobile Hamburger Button -->
+            <button id="hamburgerButton" class="ml-4 p-2 rounded-full bg-gray-200 dark:bg-gray-700 text-gray-800 dark:text-gray-200 hover:bg-gray-300 dark:hover:bg-gray-600 transition duration-300 md:hidden">
+                <svg class="h-6 w-6" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 6h16M4 12h16M4 18h16"></path>
+                </svg>
+            </button>
+        </div>
+    </header>
+
+    <!-- Mobile Menu -->
+    <div id="mobileMenu" class="mobile-menu">
+        <button id="closeMobileMenu" class="self-end p-2 text-gray-400 hover:text-gray-200">
+            <svg class="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path>
+            </svg>
+        </button>
+        
+        <!-- Features for mobile -->
+        <div class="relative w-full">
+            <button class="text-gray-400 hover:text-gray-200 font-medium transition duration-300 ease-in-out rounded-md py-2 flex items-center justify-between w-full mobile-dropdown-toggle" data-translate-key="nav-features">
+                Features
+                <svg class="ml-2 w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"></path></svg>
+            </button>
+            <div class="dropdown-content">
+                <a href="resume-analyzer.html" class="dropdown-item" data-translate-key="feature-resume-analyzer">Resume Analyzer</a>
+                <a href="advanced-analyzer.html" class="dropdown-item" data-translate-key="feature-advanced-analyzer">Advanced Analyzer</a>
+                <a href="jd-generator.html" class="dropdown-item" data-translate-key="feature-jd-generator">Job Description Generator</a>
+                <a href="ai-sourcer.html" class="dropdown-item" data-translate-key="feature-ai-sourcer">AI Sourcer/Contact Manager</a>
+                <a href="jd-poster.html" class="dropdown-item" data-translate-key="feature-jd-poster">Posting JD in my Platforms</a>
+                <a href="index.html#jd-enhancer" class="dropdown-item" data-translate-key="feature-jd-enhancer">✨ JD Enhancer</a>
+            </div>
+        </div>
+
+        <!-- Login for mobile -->
+        <a href="pages/login.html" class="text-gray-400 hover:text-gray-200 font-medium transition duration-300 ease-in-out rounded-md py-2 w-full text-left" data-translate-key="nav-login">Login</a>
+        <!-- Sign Up for mobile -->
+        <a href="pages/signup.html" class="text-gray-400 hover:text-gray-200 font-medium transition duration-300 ease-in-out rounded-md py-2 w-full text-left" data-translate-key="nav-signup">Sign Up</a>
+
+        <!-- Settings for mobile (gear icon will not be shown, just the options) -->
+        <div class="relative w-full mt-4">
+            <button class="text-gray-400 hover:text-gray-200 font-medium transition duration-300 ease-in-out rounded-md py-2 flex items-center justify-between w-full mobile-dropdown-toggle" data-translate-key="nav-settings">
+                Settings
+                <svg class="ml-2 w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"></path></svg>
+            </button>
+            <div class="dropdown-content">
+                <!-- Dark Mode Toggle for mobile -->
+                <button id="mobileDarkModeToggle" class="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-100 w-full text-left flex items-center justify-between">
+                    <span data-translate-key="settings-dark-mode">Light/Dark Mode</span>
+                    <svg id="mobileSunIcon" class="h-5 w-5" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 3v1m0 16v1m9-9h1M3 12H2m15.325-7.757l-.707-.707M6.343 17.657l-.707.707M16.95 7.05l.707-.707M7.05 16.95l-.707.707M12 7a5 5 0 100 10 5 5 0 000-10z"></path>
+                    </svg>
+                    <svg id="mobileMoonIcon" class="h-5 w-5 hidden" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M20.354 15.354A9 9 0 018.646 3.646 9.003 9.003 0 0012 21a9.003 9.003 0 008.354-5.646z"></path>
+                    </svg>
+                </button>
+                <!-- Language for mobile -->
+                <div class="relative dropdown-sub">
+                    <button class="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-100 w-full text-left flex items-center justify-between dropdown-toggle-sub" data-translate-key="nav-language">
+                        Language
+                        <svg class="ml-2 w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7"></path></svg>
+                    </button>
+                    <div class="dropdown-content-sub absolute left-full top-0 mt-0 w-32 rounded-md shadow-lg bg-white ring-1 ring-black ring-opacity-5 focus:outline-none">
+                        <a href="#" onclick="changeLanguage('en'); closeMobileMenu();" class="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-100 dropdown-item">English</a>
+                        <a href="#" onclick="changeLanguage('es'); closeMobileMenu();" class="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-100 dropdown-item">Español</a>
+                        <a href="#" onclick="changeLanguage('pt'); closeMobileMenu();" class="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-100 dropdown-item">Português</a>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Advanced Resume Analyzer Section -->
+    <section id="advanced-analyzer" class="py-16 px-4 bg-gray-100 rounded-xl shadow-lg mx-auto max-w-5xl mt-12">
+        <div class="container mx-auto text-center">
+            <h2 class="text-4xl font-bold text-indigo-800 mb-8" data-translate-key="advanced-analyzer-heading">Advanced Resume Analyzer (Batch Processing)</h2>
+            <p class="text-lg text-gray-700 mb-10 max-w-3xl mx-auto" data-translate-key="advanced-analyzer-subheading">
+                Upload multiple resumes to analyze them in a batch. Define specific job requirements and skills for this batch analysis.
+            </p>
+
+            <div class="flex flex-col md:flex-row gap-8">
+                <!-- Left Column: Job Requirements & Required Skills for Batch Analysis -->
+                <div class="w-full md:w-1/3 bg-gray-50 p-6 rounded-lg shadow-md border-t-4 border-gray-400">
+                    <h3 class="text-2xl font-bold text-gray-800 mb-4" data-translate-key="batch-jd-heading">Job Requirements for Batch Analysis</h3>
+                    <div class="mb-6">
+                        <input type="text" id="newJobDescriptionNameAdvanced" placeholder="Name for this job description" class="w-full p-2 border border-gray-300 rounded-md focus:outline-none focus:ring-1 focus:ring-indigo-500 mb-2 dark:bg-gray-700 dark:border-gray-600 dark:text-white" data-translate-key="new-jd-name-advanced-placeholder">
+                        <button onclick="window.saveJobDescriptionAdvanced()" class="w-full bg-green-600 text-white py-2 rounded-md font-semibold hover:bg-green-700 transition duration-300 ease-in-out shadow-md" data-translate-key="save-jd-advanced-button">Save Current Description</button>
+                    </div>
+
+                    <ul id="savedJobDescriptionsListAdvanced" class="space-y-2 mb-8">
+                        <p class="text-gray-500 text-sm" data-translate-key="no-saved-jd-advanced">Loading saved job descriptions...</p>
+                    </ul>
+
+                    <h3 class="text-2xl font-bold text-gray-800 mb-4" data-translate-key="batch-skills-heading">Required Skills for Batch Analysis</h3>
+                    <div class="mb-4">
+                        <input type="text" id="newSkillInputAdvanced" placeholder="Add a required skill" class="w-full p-2 border border-gray-300 rounded-md focus:outline-none focus:ring-1 focus:ring-indigo-500 mb-2 dark:bg-gray-700 dark:border-gray-600 dark:text-white" data-translate-key="new-skill-advanced-placeholder">
+                        <button onclick="window.addRequiredSkillAdvanced()" class="w-full bg-blue-600 text-white py-2 rounded-md font-semibold hover:bg-blue-700 transition duration-300 ease-in-out shadow-md" data-translate-key="add-skill-advanced-button">Add Skill</button>
+                    </div>
+                    <ul id="requiredSkillsListAdvanced" class="space-y-2">
+                        <p class="text-gray-500 text-sm" data-translate-key="no-skills-added-advanced">Loading skills...</p>
+                    </ul>
+                </div>
+
+                <!-- Right Column: Batch Analyzer Inputs and Results -->
+                <div class="w-full md:w-2/3 bg-gray-50 p-8 rounded-lg shadow-md">
+                    <div class="mb-6 text-left">
+                        <label for="resumesFiles" class="block text-gray-700 text-lg font-semibold mb-2" data-translate-key="upload-resumes-label">Upload Resumes (PDF, DOCX, TXT):</label>
+                        <!-- Drag and Drop Zone for multiple files -->
+                        <div id="dropZoneAdvanced" class="drop-zone p-8 rounded-md cursor-pointer flex flex-col items-center justify-center"
+                            ondragover="event.preventDefault(); this.classList.add('hover');"
+                            ondragleave="this.classList.remove('hover');"
+                            ondrop="event.preventDefault(); window.handleFilesAdvanced(event.dataTransfer.files);">
+                            <svg xmlns="http://www.w3.org/2000/svg" class="h-12 w-12 text-gray-400 mb-2" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M7 16a4 4 0 01-.88-7.903A5 5 0 0115.9 6L16 6a3 3 0 013 3v10a2 2 0 01-2 2H7a2 2 0 01-2-2v-1a1 1 0 011-1h1zm-1-7a3 3 0 00-3 3v1a1 1 0 001 1h1zm11-2a3 3 0 00-3-3h-1a1 1 0 00-1 1v1a1 1 0 001 1h1a3 3 0 003-3z"/>
+                            </svg>
+                            <p class="text-gray-600 mb-2" data-translate-key="drag-drop-resumes-text">Drag & drop your resumes here, or</p>
+                            <input type="file" id="resumesFiles" class="hidden" accept=".pdf,.docx,.txt" multiple onchange="window.handleFilesAdvanced(this.files)">
+                            <button onclick="document.getElementById('resumesFiles').click()" class="bg-indigo-600 text-white py-2 px-4 rounded-md font-semibold hover:bg-indigo-700 transition duration-300 ease-in-out shadow-md" data-translate-key="browse-files-advanced-button">Browse Files</button>
+                            <div id="selectedFilesDisplay" class="mt-2 text-sm text-gray-500 text-left"></div>
+                            <div id="fileLoadingIndicatorAdvanced" class="hidden text-center mt-4">
+                                <div class="animate-spin-custom inline-block w-8 h-8 border-4 border-t-4 border-indigo-200 border-t-indigo-700 rounded-full"></div>
+                                <p class="text-gray-600 mt-2" data-translate-key="file-loading-advanced-message">Loading files...</p>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="mb-6 text-left">
+                        <label for="jobRequirementsAdvanced" class="block text-gray-700 text-lg font-semibold mb-2" data-translate-key="job-requirements-advanced-label">Job Requirements for Batch Analysis:</label>
+                        <textarea id="jobRequirementsAdvanced" rows="8" class="w-full p-3 border border-gray-300 rounded-md focus:outline-none focus:ring-1 focus:ring-indigo-500 dark:bg-gray-700 dark:border-gray-600 dark:text-white" placeholder="Enter the overall job description and requirements for the batch analysis here..." data-translate-key="job-requirements-advanced-placeholder"></textarea>
+                    </div>
+
+                    <button onclick="window.analyzeResumesBatch()" class="w-full bg-purple-700 text-white py-3 px-6 rounded-md font-semibold hover:bg-purple-800 transition duration-300 ease-in-out shadow-md transform hover:scale-105" data-translate-key="analyze-resumes-batch-button">
+                        Analyze Resumes in Batch
+                    </button>
+
+                    <div id="batchAnalysisProgress" class="hidden mt-8">
+                        <div class="progress-bar-container">
+                            <div id="progressBarFill" class="progress-bar-fill">0%</div>
+                        </div>
+                        <p id="progressText" class="text-center text-gray-600 mt-2" data-translate-key="batch-progress-text">Processing 0 of 0 resumes...</p>
+                    </div>
+
+                    <div id="batchAnalysisResults" class="mt-8 p-6 bg-white rounded-lg shadow-inner text-left hidden dark:bg-gray-700 dark:text-white">
+                        <h3 class="text-2xl font-bold text-gray-800 mb-4 dark:text-white" data-translate-key="batch-results-heading">Batch Analysis Results:</h3>
+                        
+                        <!-- Filter Controls -->
+                        <div class="mb-4 p-4 bg-gray-100 rounded-md shadow-sm dark:bg-gray-700">
+                            <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
+                                <div>
+                                    <label for="filterCandidateName" class="block text-sm font-medium text-gray-700 dark:text-gray-300" data-translate-key="filter-candidate-name">Candidate Name:</label>
+                                    <input type="text" id="filterCandidateName" onkeyup="window.filterResults()" placeholder="Filter by name..." class="mt-1 block w-full p-2 border border-gray-300 rounded-md dark:bg-gray-600 dark:border-gray-500 dark:text-white">
+                                </div>
+                                <div>
+                                    <label for="filterMinMatch" class="block text-sm font-medium text-gray-700 dark:text-gray-300" data-translate-key="filter-min-match">Min Match %:</label>
+                                    <input type="number" id="filterMinMatch" onchange="window.filterResults()" min="0" max="100" placeholder="e.g., 70" class="mt-1 block w-full p-2 border border-gray-300 rounded-md dark:bg-gray-600 dark:border-gray-500 dark:text-white">
+                                </div>
+                                <div>
+                                    <label for="filterHasAllSkills" class="block text-sm font-medium text-gray-700 dark:text-gray-300" data-translate-key="filter-has-all-skills">Has All Required Skills:</label>
+                                    <select id="filterHasAllSkills" onchange="window.filterResults()" class="mt-1 block w-full p-2 border border-gray-300 rounded-md dark:bg-gray-600 dark:border-gray-500 dark:text-white">
+                                        <option value="all" data-translate-key="filter-option-all">All</option>
+                                        <option value="yes" data-translate-key="filter-option-yes">Yes</option>
+                                        <option value="no" data-translate-key="filter-option-no">No</option>
+                                    </select>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="overflow-x-auto">
+                            <table class="min-w-full divide-y divide-gray-200 dark:divide-gray-600">
+                                <thead class="bg-gray-50 dark:bg-gray-800">
+                                    <tr>
+                                        <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider dark:text-gray-300" data-translate-key="table-header-candidate">Candidate</th>
+                                        <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider dark:text-gray-300" data-translate-key="table-header-match">Match %</th>
+                                        <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider dark:text-gray-300" data-translate-key="table-header-required-skills">Required Skills</th>
+                                        <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider dark:text-gray-300" data-translate-key="table-header-feedback">Feedback</th>
+                                    </tr>
+                                </thead>
+                                <tbody id="batchAnalysisResultsTableBody" class="bg-white divide-y divide-gray-200 dark:bg-gray-700 dark:divide-gray-600">
+                                    <!-- Results will be dynamically inserted here -->
+                                </tbody>
+                            </table>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Message Box (for custom alerts/confirmations) -->
+    <div id="messageBox" class="hidden fixed inset-0 bg-gray-600 bg-opacity-50 flex items-center justify-center z-50 p-4">
+        <div class="bg-white p-6 rounded-lg shadow-xl max-w-sm w-full text-center border-t-4 border-indigo-500 dark:bg-gray-800 dark:text-white dark:border-indigo-700">
+            <p id="messageBoxText" class="text-lg font-medium mb-4"></p>
+            <div class="flex justify-center space-x-4">
+                <button id="messageBoxConfirm" class="hidden bg-green-600 text-white py-2 px-4 rounded-md hover:bg-green-700 transition duration-300">Confirm</button>
+                <button id="messageBoxCancel" class="hidden bg-red-600 text-white py-2 px-4 rounded-md hover:bg-red-700 transition duration-300">Cancel</button>
+                <button id="messageBoxClose" class="bg-indigo-600 text-white py-2 px-4 rounded-md hover:bg-indigo-700 transition duration-300">Close</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Footer Section -->
+    <footer class="bg-white shadow-inner py-8 px-4 mt-12 rounded-t-lg">
+        <div class="container mx-auto text-center text-gray-600 dark:text-gray-400">
+            <p class="mb-4" data-translate-key="footer-copyright">&copy; 2025 Rekru.AI. All rights reserved.</p>
+            <div class="flex justify-center space-x-6">
+                <a href="#" class="hover:text-indigo-700 transition duration-300" data-translate-key="footer-privacy">Privacy Policy</a>
+                <a href="#" class="hover:text-indigo-700 transition duration-300" data-translate-key="footer-terms">Terms of Service</a>
+                <a href="#" class="hover:text-indigo-700 transition duration-300" data-translate-key="footer-sitemap">Sitemap</a>
+            </div>
+        </div>
+    </footer>
+
+    <script type="module">
+        // Firebase SDKs
+        import { initializeApp } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-app.js";
+        import { getAuth, signInAnonymously, signInWithCustomToken, onAuthStateChanged } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-auth.js";
+        import { getFirestore, doc, getDoc, addDoc, setDoc, updateDoc, deleteDoc, onSnapshot, collection, query, where, getDocs } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-firestore.js";
+
+        // Global Firebase variables (Canvas provides these)
+        const appId = typeof __app_id !== 'undefined' ? __app_id : 'default-app-id';
+        const firebaseConfig = typeof __firebase_config !== 'undefined' ? JSON.parse(__firebase_config) : {};
+
+        let app, db, auth, userId;
+        let uploadedFiles = []; // To store files for batch processing
+        let batchAnalysisData = []; // To store parsed analysis results for filtering
+
+        // Initialize Firebase and authenticate
+        async function initializeFirebase() {
+            try {
+                app = initializeApp(firebaseConfig);
+                db = getFirestore(app);
+                auth = getAuth(app);
+
+                onAuthStateChanged(auth, async (user) => {
+                    if (user) {
+                        userId = user.uid;
+                        console.log("Firebase authenticated. User ID:", userId);
+                        window.loadSavedJobDescriptionsAdvanced();
+                        window.loadRequiredSkillsAdvanced();
+                    } else {
+                        if (typeof __initial_auth_token !== 'undefined' && __initial_auth_token.length > 0) {
+                            try {
+                                await signInWithCustomToken(auth, __initial_auth_token);
+                            } catch (tokenError) {
+                                console.warn("Error with custom token, falling back to anonymous:", tokenError);
+                                const anonymousUser = await signInAnonymously(auth);
+                                userId = anonymousUser.user.uid;
+                                console.log("Signed in anonymously. User ID:", userId);
+                            }
+                        } else {
+                            const anonymousUser = await signInAnonymously(auth);
+                            userId = anonymousUser.user.uid;
+                            console.log("Signed in anonymously. User ID:", userId);
+                        }
+                    }
+                });
+            } catch (error) {
+                console.error("Error initializing Firebase:", error);
+            }
+        }
+
+        document.addEventListener('DOMContentLoaded', initializeFirebase);
+
+        // --- Firestore Functions for Saved Job Descriptions (Advanced Analyzer) ---
+        window.saveJobDescriptionAdvanced = async () => {
+            if (!userId) {
+                console.error("User not authenticated. Cannot save advanced job description.");
+                window.displayMessageBox(translations[document.documentElement.lang]["auth-required-save-jd"] || 'Please log in or sign up to save job descriptions.', 'error');
+                return;
+            }
+
+            const jobDescriptionName = document.getElementById('newJobDescriptionNameAdvanced').value.trim();
+            const jobDescriptionText = document.getElementById('jobRequirementsAdvanced').value.trim();
+
+            if (!jobDescriptionName || !jobDescriptionText) {
+                window.displayMessageBox(translations[document.documentElement.lang]["provide-jd-name-text"] || 'Please provide both a name and text for the advanced job description.', 'error');
+                return;
+            }
+
+            try {
+                const jobDescriptionsCollectionRef = collection(db, `artifacts/${appId}/users/${userId}/advanced_job_descriptions`);
+                await addDoc(jobDescriptionsCollectionRef, {
+                    name: jobDescriptionName,
+                    text: jobDescriptionText,
+                    createdAt: new Date()
+                });
+                document.getElementById('newJobDescriptionNameAdvanced').value = ''; // Clear input
+                window.displayMessageBox(translations[document.documentElement.lang]["jd-saved-success"] || 'Advanced Job description saved successfully!', 'info');
+                window.loadSavedJobDescriptionsAdvanced(); // Refresh the list
+            } catch (error) {
+                console.error("Error saving advanced job description:", error);
+                window.displayMessageBox(`${translations[document.documentElement.lang]["error-saving-jd"] || 'Error saving advanced job description'}: ${error.message}`, 'error');
+            }
+        };
+
+        window.loadSavedJobDescriptionsAdvanced = async () => {
+            if (!userId) {
+                console.log("User not authenticated yet. Skipping loading advanced job descriptions.");
+                return;
+            }
+
+            const savedJobDescriptionsList = document.getElementById('savedJobDescriptionsListAdvanced');
+            savedJobDescriptionsList.innerHTML = `<p class="text-gray-500 text-sm" data-translate-key="no-saved-jd-advanced">${translations[document.documentElement.lang]["no-saved-jd-advanced"] || 'Loading saved job descriptions...'}</p>`;
+
+            try {
+                const jobDescriptionsCollectionRef = collection(db, `artifacts/${appId}/users/${userId}/advanced_job_descriptions`);
+                const q = query(jobDescriptionsCollectionRef);
+                const querySnapshot = await getDocs(q);
+
+                savedJobDescriptionsList.innerHTML = ''; // Clear loading message
+
+                if (querySnapshot.empty) {
+                    savedJobDescriptionsList.innerHTML = `<p class="text-gray-500 text-sm" data-translate-key="no-saved-jd-advanced">${translations[document.documentElement.lang]["no-saved-jd-advanced"] || 'No saved advanced job descriptions yet.'}</p>`;
+                } else {
+                    querySnapshot.forEach((doc) => {
+                        const data = doc.data();
+                        const li = document.createElement('li');
+                        li.className = 'flex justify-between items-center bg-white p-3 rounded-md shadow-sm mb-2 hover:bg-gray-100 transition duration-150 dark:bg-gray-700 dark:hover:bg-gray-600 dark:text-white';
+                        li.innerHTML = `
+                            <span class="cursor-pointer text-indigo-700 font-medium flex-grow text-left dark:text-indigo-300" data-id="${doc.id}" data-text="${encodeURIComponent(data.text)}">${data.name}</span>
+                            <button class="ml-4 text-red-500 hover:text-red-700 transition duration-150" onclick="window.confirmDeleteJobDescriptionAdvanced('${doc.id}')">
+                                <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" viewBox="0 0 20 20" fill="currentColor">
+                                    <path fill-rule="evenodd" d="M9 2a1 1 0 00-.894.553L7.382 4H4a1 1 0 000 2v10a2 2 0 002 2h8a2 2 0 002-2V6a1 1 0 100-2h-3.382l-.724-1.447A1 1 0 0011 2H9zM7 8a1 1 0 012 0v6a1 1 0 11-2 0V8zm6 0a1 1 0 01-2 0v6a1 1 0 112 0V8z" clip-rule="evenodd" />
+                                </svg>
+                            </button>
+                        `;
+                        li.querySelector('span').addEventListener('click', (e) => {
+                            document.getElementById('jobRequirementsAdvanced').value = decodeURIComponent(e.target.dataset.text);
+                            document.getElementById('newJobDescriptionNameAdvanced').value = e.target.textContent.trim(); // Populate name field too
+                        });
+                        savedJobDescriptionsList.appendChild(li);
+                    });
+                }
+                window.changeLanguage(localStorage.getItem('selectedLanguage') || 'en'); // Re-apply translations after loading dynamic content
+            } catch (error) {
+                console.error("Error loading advanced job descriptions:", error);
+                savedJobDescriptionsList.innerHTML = `<p class="text-red-500 text-sm">${translations[document.documentElement.lang]["error-loading-jd-advanced"] || 'Error loading advanced job descriptions.'}</p>`;
+            }
+        };
+
+        window.confirmDeleteJobDescriptionAdvanced = (docId) => {
+            const messageBox = document.getElementById('messageBox');
+            const messageBoxText = document.getElementById('messageBoxText');
+            const messageBoxConfirm = document.getElementById('messageBoxConfirm');
+            const messageBoxCancel = document.getElementById('messageBoxCancel');
+            const messageBoxClose = document.getElementById('messageBoxClose');
+
+            messageBoxText.textContent = translations[document.documentElement.lang]["confirm-delete-jd-advanced"] || "Are you sure you want to delete this advanced job description?";
+            messageBoxConfirm.classList.remove('hidden');
+            messageBoxCancel.classList.remove('hidden');
+            messageBoxClose.classList.add('hidden');
+
+            messageBoxConfirm.onclick = () => {
+                window.deleteJobDescriptionAdvanced(docId);
+                messageBox.classList.add('hidden');
+            };
+            messageBoxCancel.onclick = () => {
+                messageBox.classList.add('hidden');
+            };
+            messageBox.classList.remove('hidden');
+        };
+
+        window.deleteJobDescriptionAdvanced = async (docId) => {
+            if (!userId) {
+                console.error("User not authenticated. Cannot delete advanced job description.");
+                window.displayMessageBox(translations[document.documentElement.lang]["auth-required-delete-jd"] || 'Please log in or sign up to delete job descriptions.', 'error');
+                return;
+            }
+
+            try {
+                const docRef = doc(db, `artifacts/${appId}/users/${userId}/advanced_job_descriptions`, docId);
+                await deleteDoc(docRef);
+                window.displayMessageBox(translations[document.documentElement.lang]["jd-deleted-success-advanced"] || 'Advanced Job description deleted successfully!', 'info');
+                window.loadSavedJobDescriptionsAdvanced(); // Refresh the list
+            } catch (error) {
+                console.error("Error deleting advanced job description:", error);
+                window.displayMessageBox(`${translations[document.documentElement.lang]["error-deleting-jd-advanced"] || 'Error deleting advanced job description'}: ${error.message}`, 'error');
+            }
+        };
+
+        // --- Firestore Functions for Required Skills (Advanced Analyzer) ---
+        window.addRequiredSkillAdvanced = async () => {
+            if (!userId) {
+                console.error("User not authenticated. Cannot add advanced skill.");
+                window.displayMessageBox(translations[document.documentElement.lang]["auth-required-add-skill"] || 'Please log in or sign up to add skills.', 'error');
+                return;
+            }
+
+            const skillName = document.getElementById('newSkillInputAdvanced').value.trim();
+            if (!skillName) {
+                window.displayMessageBox(translations[document.documentElement.lang]["enter-skill-advanced"] || 'Please enter a skill to add to the advanced list.', 'error');
+                return;
+            }
+
+            try {
+                const skillsCollectionRef = collection(db, `artifacts/${appId}/users/${userId}/advanced_required_skills`);
+                await addDoc(skillsCollectionRef, {
+                    name: skillName,
+                    createdAt: new Date()
+                });
+                document.getElementById('newSkillInputAdvanced').value = ''; // Clear input
+                window.displayMessageBox(translations[document.documentElement.lang]["skill-added-success-advanced"] || 'Advanced Skill added successfully!', 'info');
+                window.loadRequiredSkillsAdvanced(); // Refresh the list
+            } catch (error) {
+                console.error("Error adding advanced skill:", error);
+                window.displayMessageBox(`${translations[document.documentElement.lang]["error-adding-skill-advanced"] || 'Error adding advanced skill'}: ${error.message}`, 'error');
+            }
+        };
+
+        window.loadRequiredSkillsAdvanced = async () => {
+            if (!userId) {
+                console.log("User not authenticated yet. Skipping loading advanced skills.");
+                return;
+            }
+
+            const requiredSkillsList = document.getElementById('requiredSkillsListAdvanced');
+            requiredSkillsList.innerHTML = `<p class="text-gray-500 text-sm" data-translate-key="no-skills-added-advanced">${translations[document.documentElement.lang]["no-skills-added-advanced"] || 'Loading skills...'}</p>`;
+
+            try {
+                const skillsCollectionRef = collection(db, `artifacts/${appId}/users/${userId}/advanced_required_skills`);
+                const q = query(skillsCollectionRef);
+                const querySnapshot = await getDocs(q);
+
+                requiredSkillsList.innerHTML = ''; // Clear loading message
+
+                if (querySnapshot.empty) {
+                    requiredSkillsList.innerHTML = `<p class="text-gray-500 text-sm" data-translate-key="no-skills-added-advanced">${translations[document.documentElement.lang]["no-skills-added-advanced"] || 'No required advanced skills added yet.'}</p>`;
+                } else {
+                    querySnapshot.forEach((doc) => {
+                        const data = doc.data();
+                        const li = document.createElement('li');
+                        li.className = 'flex justify-between items-center bg-white p-2 rounded-md shadow-sm mb-1 text-sm hover:bg-gray-100 transition duration-150 dark:bg-gray-700 dark:hover:bg-gray-600 dark:text-white';
+                        li.innerHTML = `
+                            <span class="text-gray-700 font-medium flex-grow text-left dark:text-white">${data.name}</span>
+                            <button class="ml-2 text-red-500 hover:text-red-700 transition duration-150" onclick="window.confirmDeleteRequiredSkillAdvanced('${doc.id}')">
+                                <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" viewBox="0 0 20 20" fill="currentColor">
+                                    <path fill-rule="evenodd" d="M9 2a1 1 0 00-.894.553L7.382 4H4a1 1 0 000 2v10a2 2 0 002 2h8a2 2 0 002-2V6a1 1 0 100-2h-3.382l-.724-1.447A1 1 0 0011 2H9zM7 8a1 1 0 012 0v6a1 1 0 11-2 0V8zm6 0a1 1 0 01-2 0v6a1 1 0 112 0V8z" clip-rule="evenodd" />
+                                </svg>
+                            </button>
+                        `;
+                        requiredSkillsList.appendChild(li);
+                    });
+                }
+                window.changeLanguage(localStorage.getItem('selectedLanguage') || 'en'); // Re-apply translations after loading dynamic content
+            } catch (error) {
+                console.error("Error loading advanced skills:", error);
+                requiredSkillsList.innerHTML = `<p class="text-red-500 text-sm">${translations[document.documentElement.lang]["error-loading-skills-advanced"] || 'Error loading advanced skills.'}</p>`;
+            }
+        };
+
+        window.confirmDeleteRequiredSkillAdvanced = (docId) => {
+            const messageBox = document.getElementById('messageBox');
+            const messageBoxText = document.getElementById('messageBoxText');
+            const messageBoxConfirm = document.getElementById('messageBoxConfirm');
+            const messageBoxCancel = document.getElementById('messageBoxCancel');
+            const messageBoxClose = document.getElementById('messageBoxClose');
+
+            messageBoxText.textContent = translations[document.documentElement.lang]["confirm-delete-skill-advanced"] || "Are you sure you want to delete this advanced skill?";
+            messageBoxConfirm.classList.remove('hidden');
+            messageBoxCancel.classList.remove('hidden');
+            messageBoxClose.classList.add('hidden');
+
+            messageBoxConfirm.onclick = () => {
+                window.deleteRequiredSkillAdvanced(docId);
+                messageBox.classList.add('hidden');
+            };
+            messageBoxCancel.onclick = () => {
+                messageBox.classList.add('hidden');
+            };
+            messageBox.classList.remove('hidden');
+        };
+
+        window.deleteRequiredSkillAdvanced = async (docId) => {
+            if (!userId) {
+                console.error("User not authenticated. Cannot delete advanced skill.");
+                window.displayMessageBox(translations[document.documentElement.lang]["auth-required-delete-skill"] || 'Please log in or sign up to delete skills.', 'error');
+                return;
+            }
+
+            try {
+                const docRef = doc(db, `artifacts/${appId}/users/${userId}/advanced_required_skills`, docId);
+                await deleteDoc(docRef);
+                window.displayMessageBox(translations[document.documentElement.lang]["skill-deleted-success-advanced"] || 'Advanced Skill deleted successfully!', 'info');
+                window.loadRequiredSkillsAdvanced(); // Refresh the list
+            } catch (error) {
+                console.error("Error deleting advanced skill:", error);
+                window.displayMessageBox(`${translations[document.documentElement.lang]["error-deleting-skill-advanced"] || 'Error deleting advanced skill'}: ${error.message}`, 'error');
+            }
+        };
+
+        // Custom message box display function (retained from previous version)
+        window.displayMessageBox = (message, type = 'info') => {
+            const messageBox = document.getElementById('messageBox');
+            const messageBoxText = document.getElementById('messageBoxText');
+            const messageBoxConfirm = document.getElementById('messageBoxConfirm');
+            const messageBoxCancel = document.getElementById('messageBoxCancel');
+            const messageBoxClose = document.getElementById('messageBoxClose');
+
+            messageBoxText.textContent = message;
+            if (type === 'info' || type === 'error') {
+                messageBoxConfirm.classList.add('hidden');
+                messageBoxCancel.classList.add('hidden');
+                messageBoxClose.classList.remove('hidden');
+                messageBoxClose.focus(); // Set focus to the close button
+            } else { // For confirmation dialogs
+                messageBoxConfirm.classList.remove('hidden');
+                messageBoxCancel.classList.remove('hidden');
+                messageBoxClose.classList.add('hidden');
+                messageBoxConfirm.focus(); // Set focus to the confirm button
+            }
+
+            messageBoxClose.onclick = () => {
+                messageBox.classList.add('hidden');
+            };
+
+            messageBox.className = `fixed inset-0 bg-gray-600 bg-opacity-50 flex items-center justify-center z-50 p-4 ${type === 'error' ? 'border-red-500' : 'border-indigo-500'}`;
+            messageBox.classList.remove('hidden');
+        };
+
+        // Advanced Analyzer Specific Functions
+        window.handleFilesAdvanced = async (files) => {
+            uploadedFiles = Array.from(files); // Store all selected files
+            const selectedFilesDisplay = document.getElementById('selectedFilesDisplay');
+            selectedFilesDisplay.innerHTML = ''; // Clear previous display
+
+            if (uploadedFiles.length === 0) {
+                selectedFilesDisplay.textContent = translations[document.documentElement.lang]["no-files-selected"] || 'No files selected.';
+                return;
+            }
+
+            const fileList = document.createElement('ul');
+            fileList.className = 'list-disc list-inside mt-2';
+            uploadedFiles.forEach(file => {
+                const listItem = document.createElement('li');
+                listItem.textContent = file.name;
+                fileList.appendChild(listItem);
+            });
+            selectedFilesDisplay.appendChild(fileList);
+        }
+
+        function readDocxFile(arrayBuffer) {
+            return mammoth.extractRawText({ arrayBuffer: arrayBuffer }).then(result => result.value);
+        }
+
+        function readTextFile(text) {
+            return text;
+        }
+
+        window.analyzeResumesBatch = async () => {
+            const jobRequirements = document.getElementById('jobRequirementsAdvanced').value.trim();
+            const batchAnalysisResultsTableBody = document.getElementById('batchAnalysisResultsTableBody');
+            const batchAnalysisProgress = document.getElementById('batchAnalysisProgress');
+            const progressBarFill = document.getElementById('progressBarFill');
+            const progressText = document.getElementById('progressText');
+            const batchAnalysisResultsDiv = document.getElementById('batchAnalysisResults');
+
+            if (uploadedFiles.length === 0) {
+                window.displayMessageBox(translations[document.documentElement.lang]["upload-resumes-first"] || 'Please upload resumes first.', 'error');
+                return;
+            }
+            if (!jobRequirements) {
+                window.displayMessageBox(translations[document.documentElement.lang]["enter-batch-jd"] || 'Please enter job requirements for batch analysis.', 'error');
+                return;
+            }
+
+            batchAnalysisResultsTableBody.innerHTML = ''; // Clear previous results
+            batchAnalysisResultsDiv.classList.add('hidden');
+            batchAnalysisProgress.classList.remove('hidden');
+            progressBarFill.style.width = '0%';
+            progressBarFill.textContent = '0%';
+            progressText.textContent = translations[document.documentElement.lang]["batch-progress-text"].replace('{completed}', 0).replace('{total}', uploadedFiles.length);
+
+            let completedAnalyses = 0;
+            const totalFiles = uploadedFiles.length;
+            batchAnalysisData = []; // Clear previous batch data for new analysis
+
+            try {
+                // Fetch required skills from Firestore for batch analysis
+                const skillsCollectionRef = collection(db, `artifacts/${appId}/users/${userId}/advanced_required_skills`);
+                const q = query(skillsCollectionRef);
+                const querySnapshot = await getDocs(q);
+                const requiredSkills = [];
+                querySnapshot.forEach((doc) => {
+                    requiredSkills.push(doc.data().name);
+                });
+
+                for (const file of uploadedFiles) {
+                    let resumeContent = '';
+                    const fileExtension = file.name.split('.').pop().toLowerCase();
+
+                    try {
+                        if (fileExtension === 'pdf') {
+                            window.displayMessageBox(`${translations[document.documentElement.lang]["pdf-not-supported-batch"] || 'Skipping PDF file'}: ${file.name}. ${translations[document.documentElement.lang]["pdf-not-supported-message"] || 'PDF analysis is not supported directly in the browser for batch processing.'}`, 'info');
+                            resumeContent = `(PDF file - not processed: ${file.name})`;
+                        } else if (fileExtension === 'docx') {
+                            const arrayBuffer = await file.arrayBuffer();
+                            resumeContent = await readDocxFile(arrayBuffer);
+                        } else if (fileExtension === 'txt') {
+                            resumeContent = await file.text();
+                        } else {
+                            window.displayMessageBox(`${translations[document.documentElement.lang]["unsupported-file-type-batch"] || 'Skipping unsupported file type'}: ${file.name}`, 'info');
+                            resumeContent = `(Unsupported file type - not processed: ${file.name})`;
+                        }
+
+                        if (resumeContent && !resumeContent.startsWith('(PDF file - not processed') && !resumeContent.startsWith('(Unsupported file type')) {
+                            const prompt = `
+                                You are an expert IT recruiter. Analyze the following resume against the provided job requirements and a list of required skills.
+                                Your primary task is to identify if and for how long the candidate has experience with each of the 'Required Skills' specifically within their 'Job Experiences' section.
+                                If a skill is mentioned, try to infer the duration from the context of the job experience. If duration is not clear, state 'unknown'.
+                                If a required skill is not found within any job experience, list it as an 'unmatchedRequiredSkill'.
+
+                                Return your analysis as a JSON object with the following structure:
+                                {
+                                    "matchPercentage": <number between 0 and 100, representing overall alignment with job requirements and skills>,
+                                    "overallFeedback": "<A concise recruiter's summary feedback (1-2 sentences max) about the candidate's overall fit, focusing on key strengths and main gaps related to skills in experience>",
+                                    "hasAllRequiredSkillsInExperience": <boolean: true if ALL skills from 'Required Skills' list are clearly present and associated with a job experience in the resume, false otherwise>,
+                                    "skillsInExperience": [
+                                        {
+                                            "skillName": "<Exact skill name from the 'Required Skills' list>",
+                                            "duration": "<Estimated duration of experience with this skill based on job experience, e.g., '3 years', '6 months', 'unknown' if duration isn't clear but skill is mentioned in experience>",
+                                            "context": "<A very brief quote or summary from the resume's job experience section where this skill was mentioned, 10-15 words max>"
+                                        },
+                                        // ... more skill objects
+                                    ],
+                                    "unmatchedRequiredSkills": [ "<skill1>", "<skill2>", ... ] // List of skills from 'Required Skills' that were NOT found within any job experience in the resume.
+                                }
+
+                                ---
+                                Resume:
+                                ${resumeContent}
+
+                                ---
+                                Job Requirements for Batch Analysis:
+                                ${jobRequirements}
+
+                                ---
+                                Required Skills (from user's saved list for batch):
+                                ${requiredSkills.length > 0 ? requiredSkills.join(', ') : 'No specific skills provided.'}
+                            `;
+
+                            let chatHistory = [];
+                            chatHistory.push({ role: "user", parts: [{ text: prompt }] });
+                            
+                            const payload = {
+                                contents: chatHistory,
+                                generationConfig: {
+                                    responseMimeType: "application/json",
+                                    responseSchema: {
+                                        type: "OBJECT",
+                                        properties: {
+                                            "matchPercentage": { "type": "NUMBER" },
+                                            "overallFeedback": { "type": "STRING" },
+                                            "hasAllRequiredSkillsInExperience": { "type": "BOOLEAN" },
+                                            "skillsInExperience": {
+                                                "type": "ARRAY",
+                                                "items": {
+                                                    "type": "OBJECT",
+                                                    "properties": {
+                                                        "skillName": { "type": "STRING" },
+                                                        "duration": { "type": "STRING" },
+                                                        "context": { "type": "STRING" }
+                                                    },
+                                                    "required": ["skillName", "duration", "context"]
+                                                }
+                                            },
+                                            "unmatchedRequiredSkills": { "type": "ARRAY", "items": { "type": "STRING" } }
+                                        },
+                                        required: ["matchPercentage", "overallFeedback", "hasAllRequiredSkillsInExperience", "skillsInExperience", "unmatchedRequiredSkills"]
+                                    }
+                                }
+                            };
+                            const apiKey = ""; // Canvas will automatically provide the API key
+                            const apiUrl = `https://generativelanguage.googleapis.com/v1beta/models/gemini-2.0-flash:generateContent?key=${apiKey}`;
+
+                            const response = await fetch(apiUrl, {
+                                method: 'POST',
+                                headers: { 'Content-Type': 'application/json' },
+                                body: JSON.stringify(payload)
+                            });
+
+                            const result = await response.json();
+
+                            if (result.candidates && result.candidates.length > 0 &&
+                                result.candidates[0].content && result.candidates[0].content.parts &&
+                                result.candidates[0].content.parts.length > 0) {
+                                const parsedResult = JSON.parse(result.candidates[0].content.parts[0].text);
+                                batchAnalysisData.push({
+                                    fileName: file.name,
+                                    ...parsedResult
+                                });
+                            } else {
+                                batchAnalysisData.push({
+                                    fileName: file.name,
+                                    matchPercentage: 0,
+                                    hasAllRequiredSkillsInExperience: false,
+                                    overallFeedback: translations[document.documentElement.lang]["analysis-failed-for-file"] || `Could not analyze this resume. ${translations[document.documentElement.lang]["try-again"] || 'Please try again'}.`,
+                                    skillsInExperience: [],
+                                    unmatchedRequiredSkills: []
+                                });
+                            }
+                        } else {
+                            batchAnalysisData.push({
+                                fileName: file.name,
+                                matchPercentage: 0,
+                                hasAllRequiredSkillsInExperience: false,
+                                overallFeedback: resumeContent, // Store the skip message
+                                skillsInExperience: [],
+                                unmatchedRequiredSkills: []
+                            });
+                        }
+                    } catch (fileError) {
+                        console.error(`Error processing file ${file.name}:`, fileError);
+                        batchAnalysisData.push({
+                            fileName: file.name,
+                            matchPercentage: 0,
+                            hasAllRequiredSkillsInExperience: false,
+                            overallFeedback: `${translations[document.documentElement.lang]["error-processing-file-batch"] || 'Error processing file'}: ${fileError.message}`,
+                            skillsInExperience: [],
+                            unmatchedRequiredSkills: []
+                        });
+                    }
+
+                    completedAnalyses++;
+                    const progress = Math.round((completedAnalyses / totalFiles) * 100);
+                    progressBarFill.style.width = `${progress}%`;
+                    progressBarFill.textContent = `${progress}%`;
+                    progressText.textContent = translations[document.documentElement.lang]["batch-progress-text"]
+                        .replace('{completed}', completedAnalyses)
+                        .replace('{total}', totalFiles);
+                }
+
+                window.renderBatchResults(batchAnalysisData); // Render all results after processing
+                batchAnalysisResultsDiv.classList.remove('hidden');
+                window.displayMessageBox(translations[document.documentElement.lang]["batch-analysis-complete"] || 'Batch analysis complete!', 'info');
+
+            } catch (error) {
+                console.error("Error during batch analysis:", error);
+                window.displayMessageBox(`${translations[document.documentElement.lang]["batch-analysis-error"] || 'An error occurred during batch analysis'}: ${error.message}. ${translations[document.documentElement.lang]["try-again"] || 'Please try again'}.`, 'error');
+            } finally {
+                batchAnalysisProgress.classList.add('hidden');
+            }
+        }
+
+        window.renderBatchResults = (dataToRender) => {
+            const batchAnalysisResultsTableBody = document.getElementById('batchAnalysisResultsTableBody');
+            batchAnalysisResultsTableBody.innerHTML = ''; // Clear existing rows
+
+            dataToRender.forEach(result => {
+                const row = batchAnalysisResultsTableBody.insertRow();
+                row.className = 'bg-white border-b hover:bg-gray-50 dark:bg-gray-800 dark:border-gray-700 dark:hover:bg-gray-600';
+                
+                const candidateCell = row.insertCell();
+                const matchCell = row.insertCell();
+                const requiredSkillsCell = row.insertCell();
+                const feedbackCell = row.insertCell();
+
+                candidateCell.className = 'px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-900 dark:text-white';
+                matchCell.className = 'px-6 py-4 whitespace-nowrap text-sm text-gray-500 dark:text-gray-300';
+                requiredSkillsCell.className = 'px-6 py-4 whitespace-nowrap text-sm text-gray-500 dark:text-gray-300';
+                feedbackCell.className = 'px-6 py-4 whitespace-nowrap text-right text-sm font-medium';
+
+                candidateCell.textContent = result.fileName;
+                matchCell.textContent = `${result.matchPercentage}%`;
+                requiredSkillsCell.textContent = result.hasAllRequiredSkillsInExperience ? (translations[document.documentElement.lang]["filter-option-yes"] || 'Yes') : (translations[document.documentElement.lang]["filter-option-no"] || 'No');
+
+                const feedbackButton = document.createElement('button');
+                feedbackButton.textContent = translations[document.documentElement.lang]["view-full-analysis"] || 'View Feedback';
+                feedbackButton.className = 'text-indigo-600 hover:text-indigo-900 dark:text-indigo-400 dark:hover:text-indigo-300';
+                feedbackButton.onclick = () => window.showFeedbackModal(result.fileName, result.overallFeedback, result.skillsInExperience, result.unmatchedRequiredSkills);
+                feedbackCell.appendChild(feedbackButton);
+            });
+            window.changeLanguage(localStorage.getItem('selectedLanguage') || 'en'); // Re-apply translations after rendering
+        };
+
+        window.filterResults = () => {
+            const filterCandidateName = document.getElementById('filterCandidateName').value.toLowerCase();
+            const filterMinMatch = parseFloat(document.getElementById('filterMinMatch').value);
+            const filterHasAllSkills = document.getElementById('filterHasAllSkills').value;
+
+            const filteredData = batchAnalysisData.filter(result => {
+                const matchesName = result.fileName.toLowerCase().includes(filterCandidateName);
+                const matchesMinMatch = isNaN(filterMinMatch) || result.matchPercentage >= filterMinMatch;
+                
+                let matchesHasAllSkills = true;
+                if (filterHasAllSkills === 'yes') {
+                    matchesHasAllSkills = result.hasAllRequiredSkillsInExperience === true;
+                } else if (filterHasAllSkills === 'no') {
+                    matchesHasAllSkills = result.hasAllRequiredSkillsInExperience === false;
+                }
+                // If 'all', no specific filtering needed for this criterion
+
+                return matchesName && matchesMinMatch && matchesHasAllSkills;
+            });
+
+            window.renderBatchResults(filteredData);
+        };
+
+        window.showFeedbackModal = (candidateName, overallFeedback, skillsInExperience, unmatchedRequiredSkills) => {
+            const modal = document.createElement('div');
+            modal.className = 'fixed inset-0 bg-gray-600 bg-opacity-50 flex items-center justify-center z-50 p-4';
+            
+            let skillsInExperienceHtml = '';
+            if (skillsInExperience && skillsInExperience.length > 0) {
+                skillsInExperienceHtml = `
+                    <h4 class="text-lg font-semibold mt-4 mb-2 dark:text-white">${translations[document.documentElement.lang]["skills-in-experience"] || 'Skills Found in Experience'}:</h4>
+                    <ul class="list-disc list-inside text-gray-700 dark:text-gray-300">
+                        ${skillsInExperience.map(skill => `
+                            <li><strong>${skill.skillName}</strong>: ${skill.duration} - <em>"${skill.context}"</em></li>
+                        `).join('')}
+                    </ul>
+                `;
+            } else {
+                skillsInExperienceHtml = `<p class="text-gray-500 mt-4">${translations[document.documentElement.lang]["no-skills-in-experience"] || 'No specific skills found in experience.'}</p>`;
+            }
+
+            let unmatchedSkillsHtml = '';
+            if (unmatchedRequiredSkills && unmatchedRequiredSkills.length > 0) {
+                unmatchedSkillsHtml = `
+                    <h4 class="text-lg font-semibold mt-4 mb-2 dark:text-white">${translations[document.documentElement.lang]["missing-required-skills"] || 'Missing Required Skills'}:</h4>
+                    <ul class="list-disc list-inside text-red-600 dark:text-red-400">
+                        ${unmatchedRequiredSkills.map(skill => `<li>${skill}</li>`).join('')}
+                    </ul>
+                `;
+            } else {
+                unmatchedSkillsHtml = `<p class="text-green-600 mt-4">${translations[document.documentElement.lang]["all-required-skills-found"] || 'All required skills found in experience!'}</p>`;
+            }
+
+            modal.innerHTML = `
+                <div class="bg-white p-6 rounded-lg shadow-xl max-w-2xl w-full dark:bg-gray-800 dark:text-white">
+                    <div class="flex justify-between items-center mb-4">
+                        <h3 class="text-xl font-bold text-gray-900 dark:text-white">${translations[document.documentElement.lang]["feedback-for"] || 'Feedback for'}: ${candidateName}</h3>
+                        <button class="text-gray-500 hover:text-gray-700 dark:text-gray-400 dark:hover:text-gray-200" onclick="this.closest('.fixed').remove()">
+                            <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12" />
+                            </svg>
+                        </button>
+                    </div>
+                    <div class="overall-feedback mb-4 text-gray-800 dark:text-gray-200">
+                        <p>${marked.parse(overallFeedback)}</p>
+                    </div>
+                    <div class="detailed-feedback max-h-96 overflow-y-auto p-2 border border-gray-200 rounded-md dark:border-gray-600">
+                        ${skillsInExperienceHtml}
+                        ${unmatchedSkillsHtml}
+                    </div>
+                    <div class="mt-4 text-right">
+                        <button class="bg-indigo-600 text-white py-2 px-4 rounded-md hover:bg-indigo-700 transition duration-300" onclick="this.closest('.fixed').remove()">
+                            ${translations[document.documentElement.lang]["close-button"] || 'Close'}
+                        </button>
+                    </div>
+                </div>
+            `;
+            document.body.appendChild(modal);
+            window.changeLanguage(localStorage.getItem('selectedLanguage') || 'en'); // Re-apply translations for modal content
+        }
+
+        // Initialize marked.js
+        marked.setOptions({
+            gfm: true,
+            breaks: true,
+            sanitize: true // Sanitize HTML output
+        });
+
+        // Dark Mode Toggle (copied from main page)
+        const darkModeToggle = document.getElementById('darkModeToggle');
+        const sunIcon = document.getElementById('sunIcon');
+        const moonIcon = document.getElementById('moonIcon');
+        const mobileDarkModeToggle = document.getElementById('mobileDarkModeToggle');
+        const mobileSunIcon = document.getElementById('mobileSunIcon');
+        const mobileMoonIcon = document.getElementById('mobileMoonIcon');
+
+        function applyTheme(theme) {
+            if (theme === 'dark') {
+                document.documentElement.classList.add('dark');
+                if (sunIcon) sunIcon.classList.add('hidden');
+                if (moonIcon) moonIcon.classList.remove('hidden');
+                if (mobileSunIcon) mobileSunIcon.classList.add('hidden');
+                if (mobileMoonIcon) mobileMoonIcon.classList.remove('hidden');
+            } else {
+                document.documentElement.classList.remove('dark');
+                if (sunIcon) sunIcon.classList.remove('hidden');
+                if (moonIcon) moonIcon.classList.add('hidden');
+                if (mobileSunIcon) mobileSunIcon.classList.remove('hidden');
+                if (mobileMoonIcon) mobileMoonIcon.classList.add('hidden');
+            }
+        }
+
+        document.addEventListener('DOMContentLoaded', () => {
+            const savedTheme = localStorage.getItem('theme');
+            if (savedTheme === 'light') {
+                applyTheme('light');
+            } else {
+                applyTheme('dark');
+            }
+        });
+
+        if (darkModeToggle) {
+            darkModeToggle.addEventListener('click', () => {
+                if (document.documentElement.classList.contains('dark')) {
+                    localStorage.setItem('theme', 'light');
+                    applyTheme('light');
+                } else {
+                    localStorage.setItem('theme', 'dark');
+                    applyTheme('dark');
+                }
+            });
+        }
+
+        if (mobileDarkModeToggle) {
+            mobileDarkModeToggle.addEventListener('click', () => {
+                if (document.documentElement.classList.contains('dark')) {
+                    localStorage.setItem('theme', 'light');
+                    applyTheme('light');
+                } else {
+                    localStorage.setItem('theme', 'dark');
+                    applyTheme('dark');
+                }
+            });
+        }
+
+        // Universal Dropdown Toggles (copied from main page)
+        document.querySelectorAll('.dropdown-toggle').forEach(button => {
+            button.addEventListener('click', function(event) {
+                event.stopPropagation();
+                const dropdownContent = this.nextElementSibling;
+                document.querySelectorAll('.dropdown-content').forEach(content => {
+                    if (content !== dropdownContent && content.closest('.dropdown') === this.closest('.dropdown')) {
+                        content.style.display = 'none';
+                    }
+                });
+                if (dropdownContent) dropdownContent.style.display = dropdownContent.style.display === 'block' ? 'none' : 'block';
+            });
+        });
+
+        // Universal Sub-Dropdown Toggles (copied from main page)
+        document.querySelectorAll('.dropdown-toggle-sub').forEach(button => {
+            button.addEventListener('click', function(event) {
+                event.stopPropagation();
+                const dropdownContentSub = this.nextElementSibling;
+                this.closest('.dropdown-content').querySelectorAll('.dropdown-content-sub').forEach(content => {
+                    if (content !== dropdownContentSub) {
+                        content.style.display = 'none';
+                    }
+                });
+                if (dropdownContentSub) dropdownContentSub.style.display = dropdownContentSub.style.display === 'block' ? 'none' : 'block';
+            });
+        });
+
+        // Close all dropdowns when clicking outside (copied from main page)
+        window.addEventListener('click', function(event) {
+            if (!event.target.matches('.dropdown-toggle') && !event.target.matches('.dropdown-toggle-sub') && !event.target.closest('.dropdown-content') && !event.target.closest('.dropdown-content-sub')) {
+                document.querySelectorAll('.dropdown-content').forEach(content => {
+                    content.style.display = 'none';
+                });
+                document.querySelectorAll('.dropdown-content-sub').forEach(content => {
+                    content.style.display = 'none';
+                });
+            }
+        });
+
+        // Mobile Menu Functionality (copied from main page)
+        const hamburgerButton = document.getElementById('hamburgerButton');
+        const closeMobileMenuButton = document.getElementById('closeMobileMenu');
+        const mobileMenu = document.getElementById('mobileMenu');
+        const mobileDropdownToggles = document.querySelectorAll('.mobile-dropdown-toggle');
+
+        if (hamburgerButton) {
+            hamburgerButton.addEventListener('click', () => {
+                if (mobileMenu) mobileMenu.classList.add('is-open');
+            });
+        }
+
+        if (closeMobileMenuButton) {
+            closeMobileMenuButton.addEventListener('click', () => {
+                if (mobileMenu) mobileMenu.classList.remove('is-open');
+            });
+        }
+
+        window.closeMobileMenu = () => {
+            if (mobileMenu) mobileMenu.classList.remove('is-open');
+        }
+
+        mobileMenu.querySelectorAll('a').forEach(item => {
+            item.addEventListener('click', () => {
+                window.closeMobileMenu();
+            });
+        });
+
+        mobileDropdownToggles.forEach(button => {
+            button.addEventListener('click', function() {
+                const dropdownContent = this.nextElementSibling;
+                if (dropdownContent) dropdownContent.style.display = dropdownContent.style.display === 'block' ? 'none' : 'block';
+            });
+        });
+
+        // Language Translation (updated for advanced analyzer specific keys)
+        const translations = {
+            en: {
+                "logo-text": "Rekru.AI",
+                "nav-features": "Features",
+                "feature-resume-analyzer": "Resume Analyzer",
+                "feature-advanced-analyzer": "Advanced Analyzer",
+                "feature-jd-generator": "Job Description Generator",
+                "feature-ai-sourcer": "AI Sourcer/Contact Manager",
+                "feature-jd-poster": "Posting JD in my Platforms",
+                "feature-jd-enhancer": "✨ JD Enhancer",
+                "nav-language": "Language",
+                "nav-login": "Login",
+                "nav-signup": "Sign Up",
+                "nav-settings": "Settings",
+                "settings-dark-mode": "Light/Dark Mode",
+                "advanced-analyzer-heading": "Advanced Resume Analyzer (Batch Processing)",
+                "advanced-analyzer-subheading": "Upload multiple resumes to analyze them in a batch. Define specific job requirements and skills for this batch analysis.",
+                "batch-jd-heading": "Job Requirements for Batch Analysis",
+                "new-jd-name-advanced-placeholder": "Name for this job description",
+                "save-jd-advanced-button": "Save Current Description",
+                "no-saved-jd-advanced": "No saved job descriptions yet.",
+                "batch-skills-heading": "Required Skills for Batch Analysis",
+                "new-skill-advanced-placeholder": "Add a required skill",
+                "add-skill-advanced-button": "Add Skill",
+                "no-skills-added-advanced": "No required skills added yet.",
+                "upload-resumes-label": "Upload Resumes (PDF, DOCX, TXT):",
+                "drag-drop-resumes-text": "Drag & drop your resumes here, or",
+                "browse-files-advanced-button": "Browse Files",
+                "file-loading-advanced-message": "Loading files...",
+                "job-requirements-advanced-label": "Job Requirements for Batch Analysis:",
+                "job-requirements-advanced-placeholder": "Enter the overall job description and requirements for the batch analysis here...",
+                "analyze-resumes-batch-button": "Analyze Resumes in Batch",
+                "batch-progress-text": "Processing {completed} of {total} resumes...",
+                "batch-results-heading": "Batch Analysis Results:",
+                "table-header-candidate": "Candidate",
+                "table-header-match": "Match %",
+                "table-header-required-skills": "Required Skills",
+                "table-header-feedback": "Feedback",
+                "view-full-analysis": "View Feedback",
+                "feedback-for": "Feedback for",
+                "close-button": "Close",
+                "no-files-selected": "No files selected.",
+                "upload-resumes-first": "Please upload resumes first.",
+                "enter-batch-jd": "Please enter job requirements for batch analysis.",
+                "pdf-not-supported-batch": "Skipping PDF file",
+                "pdf-not-supported-message": "PDF analysis is not supported directly in the browser for batch processing.",
+                "unsupported-file-type-batch": "Skipping unsupported file type",
+                "analysis-failed-for-file": "Could not analyze this resume.",
+                "error-processing-file-batch": "Error processing file",
+                "batch-analysis-complete": "Batch analysis complete!",
+                "batch-analysis-error": "An error occurred during batch analysis",
+                "try-again": "Please try again",
+                "not-available": "N/A",
+                "auth-required-save-jd": "Please log in or sign up to save job descriptions.",
+                "provide-jd-name-text": "Please provide both a name and text for the advanced job description.",
+                "jd-saved-success": "Advanced Job description saved successfully!",
+                "error-saving-jd": "Error saving advanced job description",
+                "error-loading-jd-advanced": "Error loading advanced job descriptions.",
+                "confirm-delete-jd-advanced": "Are you sure you want to delete this advanced job description?",
+                "jd-deleted-success-advanced": "Advanced Job description deleted successfully!",
+                "error-deleting-jd-advanced": "Error deleting advanced job description",
+                "auth-required-add-skill": "Please log in or sign up to add skills.",
+                "enter-skill-advanced": "Please enter a skill to add to the advanced list.",
+                "skill-added-success-advanced": "Advanced Skill added successfully!",
+                "error-adding-skill-advanced": "Error adding advanced skill",
+                "error-loading-skills-advanced": "Error loading advanced skills.",
+                "confirm-delete-skill-advanced": "Are you sure you want to delete this advanced skill?",
+                "skill-deleted-success-advanced": "Advanced Skill deleted successfully!",
+                "error-deleting-skill-advanced": "Error deleting advanced skill",
+                "of-text": "of",
+                "resumes-text": "resumes",
+                "filter-candidate-name": "Candidate Name:",
+                "filter-min-match": "Min Match %:",
+                "filter-has-all-skills": "Has All Required Skills:",
+                "filter-option-all": "All",
+                "filter-option-yes": "Yes",
+                "filter-option-no": "No",
+                "skills-in-experience": "Skills Found in Experience",
+                "no-skills-in-experience": "No specific skills found in experience.",
+                "missing-required-skills": "Missing Required Skills",
+                "all-required-skills-found": "All required skills found in experience!"
+            },
+            es: {
+                "logo-text": "Rekru.AI",
+                "nav-features": "Características",
+                "feature-resume-analyzer": "Analizador de Currículums",
+                "feature-advanced-analyzer": "Analizador Avanzado",
+                "feature-jd-generator": "Generador de Descripciones de Puesto",
+                "feature-ai-sourcer": "Buscador/Gestor de Contactos con IA",
+                "feature-jd-poster": "Publicar Descripciones de Puesto en mis Plataformas",
+                "feature-jd-enhancer": "✨ Mejorador de Descripciones de Puesto",
+                "nav-language": "Idioma",
+                "nav-login": "Iniciar Sesión",
+                "nav-signup": "Registrarse",
+                "nav-settings": "Configuración",
+                "settings-dark-mode": "Modo Claro/Oscuro",
+                "advanced-analyzer-heading": "Analizador de Currículums Avanzado (Procesamiento por Lotes)",
+                "advanced-analyzer-subheading": "Sube múltiples currículums para analizarlos en un lote. Define requisitos de puesto y habilidades específicas para este análisis por lotes.",
+                "batch-jd-heading": "Requisitos de Puesto para Análisis por Lotes",
+                "new-jd-name-advanced-placeholder": "Nombre para esta descripción de puesto",
+                "save-jd-advanced-button": "Guardar Descripción Actual",
+                "no-saved-jd-advanced": "No hay descripciones de puesto guardadas aún.",
+                "batch-skills-heading": "Habilidades Requeridas para Análisis por Lotes",
+                "new-skill-advanced-placeholder": "Añadir una habilidad requerida",
+                "add-skill-advanced-button": "Añadir Habilidad",
+                "no-skills-added-advanced": "No se han añadido habilidades requeridas aún.",
+                "upload-resumes-label": "Subir Currículums (PDF, DOCX, TXT):",
+                "drag-drop-resumes-text": "Arrastra y suelta tus currículums aquí, o",
+                "browse-files-advanced-button": "Explorar Archivos",
+                "file-loading-advanced-message": "Cargando archivos...",
+                "job-requirements-advanced-label": "Requisitos del Puesto para Análisis por Lotes:",
+                "job-requirements-advanced-placeholder": "Introduce la descripción general del puesto y los requisitos para el análisis por lotes aquí...",
+                "analyze-resumes-batch-button": "Analizar Currículums por Lotes",
+                "batch-progress-text": "Procesando {completed} de {total} currículums...",
+                "batch-results-heading": "Resultados del Análisis por Lotes:",
+                "table-header-candidate": "Candidato",
+                "table-header-match": "Coincidencia %",
+                "table-header-required-skills": "Habilidades Requeridas",
+                "table-header-feedback": "Comentarios",
+                "view-full-analysis": "Ver Comentarios",
+                "feedback-for": "Comentarios para",
+                "close-button": "Cerrar",
+                "no-files-selected": "No se ha seleccionado ningún archivo.",
+                "upload-resumes-first": "Por favor, sube currículums primero.",
+                "enter-batch-jd": "Por favor, introduce los requisitos del puesto para el análisis por lotes.",
+                "pdf-not-supported-batch": "Saltando archivo PDF",
+                "pdf-not-supported-message": "El análisis de PDF no es compatible directamente en el navegador para el procesamiento por lotes.",
+                "unsupported-file-type-batch": "Saltando tipo de archivo no compatible",
+                "analysis-failed-for-file": "No se pudo analizar este currículum.",
+                "error-processing-file-batch": "Error al procesar el archivo",
+                "batch-analysis-complete": "¡Análisis por lotes completado!",
+                "batch-analysis-error": "Ocurrió un error durante el análisis por lotes",
+                "try-again": "Inténtalo de nuevo",
+                "not-available": "N/D",
+                "auth-required-save-jd": "Por favor, inicia sesión o regístrate para guardar descripciones de puesto.",
+                "provide-jd-name-text": "Por favor, proporciona un nombre y texto para la descripción de puesto avanzada.",
+                "jd-saved-success": "¡Descripción de puesto avanzada guardada con éxito!",
+                "error-saving-jd": "Error al guardar la descripción de puesto avanzada",
+                "error-loading-jd-advanced": "Error al cargar las descripciones de puesto avanzadas.",
+                "confirm-delete-jd-advanced": "¿Estás seguro de que quieres eliminar esta descripción de puesto avanzada?",
+                "jd-deleted-success-advanced": "¡Descripción de puesto avanzada eliminada con éxito!",
+                "error-deleting-jd-advanced": "Error al eliminar la descripción de puesto avanzada",
+                "auth-required-add-skill": "Por favor, inicia sesión o regístrate para añadir habilidades.",
+                "enter-skill-advanced": "Por favor, introduce una habilidad para añadir a la lista avanzada.",
+                "skill-added-success-advanced": "¡Habilidad avanzada añadida con éxito!",
+                "error-adding-skill-advanced": "Error al añadir habilidad avanzada",
+                "error-loading-skills-advanced": "Error al cargar las habilidades avanzadas.",
+                "confirm-delete-skill-advanced": "¿Estás seguro de que quieres eliminar esta habilidad avanzada?",
+                "skill-deleted-success-advanced": "¡Habilidad avanzada eliminada con éxito!",
+                "error-deleting-skill-advanced": "Error al eliminar habilidad avanzada",
+                "of-text": "de",
+                "resumes-text": "currículums",
+                "filter-candidate-name": "Nombre del Candidato:",
+                "filter-min-match": "Coincidencia Mínima %:",
+                "filter-has-all-skills": "¿Tiene Todas las Habilidades Requeridas?:",
+                "filter-option-all": "Todos",
+                "filter-option-yes": "Sí",
+                "filter-option-no": "No",
+                "skills-in-experience": "Habilidades Encontradas en la Experiencia",
+                "no-skills-in-experience": "No se encontraron habilidades específicas en la experiencia.",
+                "missing-required-skills": "Habilidades Requeridas Faltantes",
+                "all-required-skills-found": "¡Todas las habilidades requeridas encontradas en la experiencia!"
+            },
+            pt: {
+                "logo-text": "Rekru.AI",
+                "nav-features": "Recursos",
+                "feature-resume-analyzer": "Analisador de Currículos",
+                "feature-advanced-analyzer": "Analisador Avançado",
+                "feature-jd-generator": "Gerador de Descrição de Cargo",
+                "feature-ai-sourcer": "AI Sourcer/Gerenciador de Contatos",
+                "feature-jd-poster": "Publicar Descrição de Cargo nas Minhas Plataformas",
+                "feature-jd-enhancer": "✨ Otimizador de Descrição de Cargo",
+                "nav-language": "Idioma",
+                "nav-login": "Entrar",
+                "nav-signup": "Cadastrar-se",
+                "nav-settings": "Configurações",
+                "settings-dark-mode": "Modo Claro/Escuro",
+                "advanced-analyzer-heading": "Analisador de Currículos Avançado (Processamento em Lote)",
+                "advanced-analyzer-subheading": "Faça upload de múltiplos currículos para analisá-los em lote. Defina requisitos de cargo e habilidades específicas para esta análise em lote.",
+                "batch-jd-heading": "Requisitos de Cargo para Análise em Lote",
+                "new-jd-name-advanced-placeholder": "Nome para esta descrição de cargo",
+                "save-jd-advanced-button": "Salvar Descrição Atual",
+                "no-saved-jd-advanced": "Nenhuma descrição de cargo salva ainda.",
+                "batch-skills-heading": "Habilidades Necessárias para Análise em Lote",
+                "new-skill-advanced-placeholder": "Adicionar uma habilidade necessária",
+                "add-skill-advanced-button": "Adicionar Habilidade",
+                "no-skills-added-advanced": "Nenhuma habilidade necessária adicionada ainda.",
+                "upload-resumes-label": "Fazer Upload de Currículos (PDF, DOCX, TXT):",
+                "drag-drop-resumes-text": "Arraste e solte seus currículos aqui, ou",
+                "browse-files-advanced-button": "Procurar Arquivos",
+                "file-loading-advanced-message": "Carregando arquivos...",
+                "job-requirements-advanced-label": "Requisitos do Cargo para Análise em Lote:",
+                "job-requirements-advanced-placeholder": "Insira a descrição geral do cargo e os requisitos para a análise em lote aqui...",
+                "analyze-resumes-batch-button": "Analisar Currículos em Lote",
+                "batch-progress-text": "Processando {completed} de {total} currículos...",
+                "batch-results-heading": "Resultados da Análise em Lote:",
+                "table-header-candidate": "Candidato",
+                "table-header-match": "Correspondência %",
+                "table-header-required-skills": "Habilidades Necessárias",
+                "table-header-feedback": "Feedback",
+                "view-full-analysis": "Ver Feedback",
+                "feedback-for": "Feedback para",
+                "close-button": "Fechar",
+                "no-files-selected": "Nenhum arquivo selecionado.",
+                "upload-resumes-first": "Por favor, faça upload de currículos primeiro.",
+                "enter-batch-jd": "Por favor, insira os requisitos do cargo para análise em lote.",
+                "pdf-not-supported-batch": "Ignorando arquivo PDF",
+                "pdf-not-supported-message": "A análise de PDF não é suportada diretamente no navegador para processamento em lote.",
+                "unsupported-file-type-batch": "Ignorando tipo de arquivo não suportado",
+                "analysis-failed-for-file": "Não foi possível analisar este currículo.",
+                "error-processing-file-batch": "Erro ao processar o arquivo",
+                "batch-analysis-complete": "Análise em lote concluída!",
+                "batch-analysis-error": "Ocorreu um erro durante a análise em lote",
+                "try-again": "Tente novamente",
+                "not-available": "N/D",
+                "auth-required-save-jd": "Por favor, faça login ou cadastre-se para salvar descrições de cargo.",
+                "provide-jd-name-text": "Por favor, forneça um nome e texto para a descrição de cargo avançada.",
+                "jd-saved-success": "Descrição de cargo avançada salva com sucesso!",
+                "error-saving-jd": "Erro ao salvar descrição de cargo avançada",
+                "error-loading-jd-advanced": "Erro ao carregar descrições de cargo avançadas.",
+                "confirm-delete-jd-advanced": "Tem certeza de que deseja excluir esta descrição de cargo avançada?",
+                "jd-deleted-success-advanced": "Descrição de cargo avançada excluída com sucesso!",
+                "error-deleting-jd-advanced": "Erro ao excluir descrição de cargo avançada",
+                "auth-required-add-skill": "Por favor, faça login ou cadastre-se para adicionar habilidades.",
+                "enter-skill-advanced": "Por favor, insira uma habilidade para adicionar à lista avançada.",
+                "skill-added-success-advanced": "Habilidade avançada adicionada com sucesso!",
+                "error-adding-skill-advanced": "Erro ao adicionar habilidade avançada",
+                "error-loading-skills-advanced": "Erro ao carregar habilidades avançadas.",
+                "confirm-delete-skill-advanced": "Tem certeza de que deseja excluir esta habilidade avançada?",
+                "skill-deleted-success-advanced": "Habilidade avançada excluída com sucesso!",
+                "error-deleting-skill-advanced": "Erro ao excluir habilidade avançada",
+                "of-text": "de",
+                "resumes-text": "currículos",
+                "filter-candidate-name": "Nome do Candidato:",
+                "filter-min-match": "Correspondência Mínima %:",
+                "filter-has-all-skills": "Possui Todas as Habilidades Necessárias?:",
+                "filter-option-all": "Todos",
+                "filter-option-yes": "Sim",
+                "filter-option-no": "Não",
+                "skills-in-experience": "Habilidades Encontradas na Experiência",
+                "no-skills-in-experience": "Nenhuma habilidade específica encontrada na experiência.",
+                "missing-required-skills": "Habilidades Necessárias Ausentes",
+                "all-required-skills-found": "Todas as habilidades necessárias encontradas na experiência!"
+            }
+        };
+
+        window.changeLanguage = (lang) => {
+            const elements = document.querySelectorAll('[data-translate-key]');
+            elements.forEach(element => {
+                const key = element.getAttribute('data-translate-key');
+                if (translations[lang] && translations[lang][key]) {
+                    // Handle placeholders for input/textarea elements
+                    if (element.tagName === 'INPUT' || element.tagName === 'TEXTAREA') {
+                        element.placeholder = translations[lang][key];
+                    } else if (key === "batch-progress-text") {
+                        // Special handling for progress text with dynamic values
+                        const progressBarFill = document.getElementById('progressBarFill');
+                        const completed = progressBarFill ? progressBarFill.textContent.split('%')[0] : '0'; // Extract current percentage
+                        const total = uploadedFiles.length;
+                        element.textContent = translations[lang][key]
+                            .replace('{completed}', completed)
+                            .replace('{total}', total);
+                    }
+                    else {
+                        element.textContent = translations[lang][key];
+                    }
+                }
+            });
+            document.documentElement.lang = lang;
+            localStorage.setItem('selectedLanguage', lang);
+        }
+
+        document.addEventListener('DOMContentLoaded', () => {
+            const savedLanguage = localStorage.getItem('selectedLanguage') || 'en';
+            window.changeLanguage(savedLanguage);
+        });
+    </script>
+</body>
+</html>
