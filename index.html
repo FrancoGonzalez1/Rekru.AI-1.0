@@ -3,93 +3,11 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Rekru.AI - Innovating IT Talent Acquisition</title>
+    <title>Rekru.AI - AI-Powered Recruitment Solutions</title>
+    <!-- Tailwind CSS CDN for easy styling -->
     <script src="https://cdn.tailwindcss.com"></script>
-    <link href="https://fonts.googleapis.com/css2?family=Orbitron:wght@400;700&display=swap" rel="stylesheet">
-    <!-- Firebase SDKs -->
-    <script type="module">
-        // Import the functions you need from the SDKs you need
-        import { initializeApp } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-app.js";
-        // Firebase Auth for login/signup
-        import { getAuth } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-auth.js";
-
-        // Your web app's Firebase configuration (updated with new API key)
-        const firebaseConfig = {
-            apiKey: "AIzaSyDcLbD31UZMAP-crO-x97KXFpyD95aMFiY", // Updated API Key
-            authDomain: "rekruai2.firebaseapp.com",
-            projectId: "rekruai2",
-            storageBucket: "rekruai2.firebasestorage.app",
-            messagingSenderId: "722572420884",
-            appId: "1:722572420884:web:753e2a9708b04f23f98401",
-            measurementId: "G-B60KE54L70"
-        };
-
-        // Initialize Firebase
-        const app = initializeApp(firebaseConfig);
-        const auth = getAuth(app); // Initialize Auth service
-        console.log("Firebase initialized successfully."); // Added for debugging
-
-        // Gemini API Integration - Job Description Enhancer (logic kept for feature link)
-        // This section remains in JS for potential future re-integration or if the linked page uses it.
-        const enhanceJdButton = document.getElementById('enhanceJdButton');
-        const jdInput = document.getElementById('jdInput');
-        const enhancedJdOutput = document.getElementById('enhancedJdOutput');
-        const jdLoadingIndicator = document.getElementById('jdLoadingIndicator');
-
-        if (enhanceJdButton) {
-            enhanceJdButton.addEventListener('click', async () => {
-                const prompt = jdInput.value.trim();
-                if (!prompt) {
-                    enhancedJdOutput.textContent = "Please enter a job description to enhance.";
-                    enhancedJdOutput.classList.remove('hidden', 'text-green-600');
-                    enhancedJdOutput.classList.add('text-red-600');
-                    return;
-                }
-
-                jdLoadingIndicator.classList.remove('hidden');
-                enhancedJdOutput.classList.add('hidden');
-                enhancedJdOutput.textContent = ''; // Clear previous output
-
-                try {
-                    let chatHistory = [];
-                    chatHistory.push({ role: "user", parts: [{ text: `Enhance the following job description to be more comprehensive, attractive, and optimized for attracting top IT talent. Include sections like "About the Role", "Key Responsibilities", "Required Skills and Experience", "Preferred Qualifications", and "What We Offer". Make it engaging and professional:\n\n${prompt}` }] });
-                    
-                    const payload = { contents: chatHistory };
-                    const apiKey = ""; // Canvas will automatically provide the API key
-                    const apiUrl = `https://generativelanguage.googleapis.com/v1beta/models/gemini-2.0-flash:generateContent?key=${apiKey}`;
-
-                    const response = await fetch(apiUrl, {
-                        method: 'POST',
-                        headers: { 'Content-Type': 'application/json' },
-                        body: JSON.stringify(payload)
-                    });
-
-                    const result = await response.json();
-
-                    if (result.candidates && result.candidates.length > 0 &&
-                        result.candidates[0].content && result.candidates[0].content.parts &&
-                        result.candidates[0].content.parts.length > 0) {
-                        const text = result.candidates[0].content.parts[0].text;
-                        enhancedJdOutput.textContent = text;
-                        enhancedJdOutput.classList.remove('hidden', 'text-red-600');
-                        enhancedJdOutput.classList.add('text-green-600');
-                    } else {
-                        enhancedJdOutput.textContent = "Could not enhance job description. Please try again.";
-                        enhancedJdOutput.classList.remove('hidden', 'text-green-600');
-                        enhancedJdOutput.classList.add('text-red-600');
-                    }
-                } catch (error) {
-                    console.error("Gemini API Error:", error);
-                    enhancedJdOutput.textContent = "An error occurred while connecting to the AI. Please try again later.";
-                    enhancedJdOutput.classList.remove('hidden', 'text-green-600');
-                    enhancedJdOutput.classList.add('text-red-600');
-                } finally {
-                    jdLoadingIndicator.classList.add('hidden');
-                }
-            });
-        }
-    </script>
-
+    <!-- Google Fonts for "Inter" and "Orbitron" -->
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=Orbitron:wght@400;700&display=swap" rel="stylesheet">
     <style>
         /* Custom font for a modern look */
         body {
@@ -148,7 +66,7 @@
         html.dark .text-gray-500 {
             color: #a0aec0; /* medium gray */
         }
-        html.dark .text-indigo-700 { /* Rekru.AI logo, saved JD links */
+        html.dark .text-indigo-700 { /* Rekru.AI logo */
             color: #a78bfa; /* violet-400, more vibrant */
         }
         html.dark .text-indigo-800 { /* Section headings */
@@ -157,7 +75,7 @@
         html.dark footer {
             background-color: #1a202c; /* darker footer */
         }
-        html.dark input, html.dark textarea, html.dark select {
+        html.dark input, html.dark textarea {
             background-color: #4a5568; /* Darker input fields */
             border-color: #64748b; /* Slate-600 for borders */
             color: #f8fafc; /* White text in inputs */
@@ -170,112 +88,81 @@
         .dropdown-content {
             display: none;
             position: absolute;
-            background-color: #f9f9f9; /* Light mode default */
+            background-color: #f9f9f9;
             min-width: 160px;
             box-shadow: 0px 8px 16px 0px rgba(0,0,0,0.2);
             z-index: 1;
             border-radius: 0.5rem;
             overflow: hidden;
-            left: 0; /* Align to the left of the parent button */
-            top: 100%; /* Position below the parent button */
-            transform: none; /* Reset any previous transforms */
-        }
-        html.dark .dropdown-content {
-            background-color: #2d3748; /* Darker background for dropdown */
-            box-shadow: 0px 8px 16px 0px rgba(0,0,0,0.4);
+            right: 0; /* Align to the right */
+            left: auto;
+            transform: none;
         }
         .dropdown-content a, .dropdown-content button {
-            color: black; /* Light mode default */
+            color: black;
             padding: 12px 16px;
             text-decoration: none;
             display: block;
             text-align: left;
         }
-        html.dark .dropdown-content a, html.dark .dropdown-content button {
-            color: #e2e8f0; /* Light text for dark mode dropdown */
-        }
         .dropdown-content a:hover, .dropdown-content button:hover {
-            background-color: #f1f1f1; /* Light mode default */
+            background-color: #f1f1f1;
+        }
+
+        html.dark .dropdown-content {
+            background-color: #2d3748; /* darker */
+            box-shadow: 0px 8px 16px 0px rgba(0,0,0,0.4);
+        }
+        html.dark .dropdown-content a, html.dark .dropdown-content button {
+            color: #e2e8f0; /* light text */
         }
         html.dark .dropdown-content a:hover, html.dark .dropdown-content button:hover {
-            background-color: #4a5568; /* Darker hover for dropdown */
+            background-color: #4a5568; /* darker hover */
         }
 
         /* Sub-dropdown styles */
         .dropdown-content-sub {
             display: none;
             position: absolute;
-            background-color: #f9f9f9; /* Light mode default */
+            background-color: #f9f9f9;
             min-width: 120px;
             box-shadow: 0px 8px 16px 0px rgba(0,0,0,0.2);
             z-index: 2; /* Higher z-index for sub-dropdown */
             border-radius: 0.5rem;
             overflow: hidden;
-            left: 100%; /* Position to the right of the parent item */
-            top: 0; /* Align with the top of the parent item */
-        }
-        html.dark .dropdown-content-sub {
-            background-color: #2d3748; /* Same background as parent dropdown */
-            box-shadow: 0px 8px 16px 0px rgba(0,0,0,0.4);
         }
         .dropdown-content-sub a {
-            color: black; /* Light mode default */
+            color: black;
             padding: 12px 16px;
             text-decoration: none;
             display: block;
             text-align: left;
         }
+        .dropdown-content-sub a:hover {
+            background-color: #f1f1f1;
+        }
+        html.dark .dropdown-content-sub {
+            background-color: #2d3748;
+        }
         html.dark .dropdown-content-sub a {
             color: #e2e8f0;
-        }
-        .dropdown-content-sub a:hover {
-            background-color: #f1f1f1; /* Light mode default */
         }
         html.dark .dropdown-content-sub a:hover {
             background-color: #4a5568;
         }
 
-        /* Custom Gradient Borders for information boxes */
-        .gradient-border-b {
-            border-bottom: 4px solid transparent; /* Required for border-image */
-            border-image: linear-gradient(to right, #ef4444, #f97316, #eab308) 1; /* Fire red, orange, yellow */
-        }
-        .gradient-border-l {
-            border-left: 4px solid transparent; /* Required for border-image */
-            border-image: linear-gradient(to bottom, #ef4444, #f97316, #eab308) 1; /* Fire red, orange, yellow */
-        }
-
-        /* Centering navigation items for larger screens */
-        .header-nav-list {
-            display: flex;
-            justify-content: center;
-            flex-wrap: wrap;
-            flex-grow: 1; /* Allow it to take available space for centering */
-        }
-
-        /* Animations for scroll */
-        .animate-on-scroll {
-            opacity: 0;
-            transform: translateY(20px);
-            transition: opacity 0.6s ease-out, transform 0.6s ease-out;
-        }
-
-        .animate-on-scroll.is-visible {
-            opacity: 1;
-            transform: translateY(0);
-        }
-
-        /* Specific animation for cards */
-        .animate-card {
-            opacity: 0;
-            transform: scale(0.9);
-            transition: opacity 0.6s ease-out, transform 0.6s ease-out;
-        }
-
-        .animate-card.is-visible {
-            opacity: 1;
-            transform: scale(1);
-        }
+        /* Specific border colors for service cards to match original theme */
+        .border-indigo-500 { border-color: #6366f1; }
+        .border-purple-500 { border-color: #a855f7; }
+        .border-pink-500 { border-color: #ec4899; }
+        .border-blue-500 { border-color: #3b82f6; }
+        .border-green-500 { border-color: #22c55e; }
+        .border-yellow-500 { border-color: #eab308; }
+        .border-orange-500 { border-color: #f97316; }
+        .border-cyan-500 { border-color: #06b6d4; }
+        .border-red-500 { border-color: #ef4444; }
+        .border-lime-600 { border-color: #65a30d; } /* For success buttons */
+        .border-yellow-600 { border-color: #ca8a04; } /* For add skill button */
 
         /* Mobile menu specific styles */
         .mobile-menu {
@@ -340,14 +227,17 @@
 </head>
 <body class="bg-gray-50 text-gray-800">
 
+    <!-- Header Section -->
     <header class="bg-white shadow-md p-4 sticky top-0 z-50 rounded-b-lg">
         <div class="container mx-auto flex justify-between items-center flex-wrap">
+            <!-- Agency Logo/Name -->
             <a href="/index.html" class="text-3xl font-bold text-indigo-700 hover:text-indigo-900 transition duration-300 ease-in-out font-orbitron mr-auto" data-translate-key="logo-text">
                 Rekru.AI
             </a>
+            <!-- Navigation Menu -->
             <nav class="mt-4 md:mt-0 flex items-center flex-grow justify-end hidden md:flex">
                 <ul class="flex space-x-6 items-center">
-                    <!-- Features (now on the left) -->
+                    <!-- Features (next to logo) -->
                     <li class="relative dropdown">
                         <button class="text-gray-600 hover:text-indigo-700 font-medium transition duration-300 ease-in-out rounded-md px-3 py-2 flex items-center dropdown-toggle" data-translate-key="nav-features">
                             Features
@@ -397,7 +287,7 @@
                                     Language
                                     <svg class="ml-2 w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7"></path></svg>
                                 </button>
-                                <div class="dropdown-content-sub absolute mt-0 w-32 rounded-md shadow-lg bg-white ring-1 ring-black ring-opacity-5 focus:outline-none">
+                                <div class="dropdown-content-sub absolute left-full top-0 mt-0 w-32 rounded-md shadow-lg bg-white ring-1 ring-black ring-opacity-5 focus:outline-none">
                                     <a href="#" onclick="changeLanguage('en')" class="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-100 dropdown-item">English</a>
                                     <a href="#" onclick="changeLanguage('es')" class="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-100 dropdown-item">Español</a>
                                     <a href="#" onclick="changeLanguage('pt')" class="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-100 dropdown-item">Português</a>
@@ -417,11 +307,12 @@
         </div>
     </header>
 
+    <!-- Mobile Menu -->
     <div id="mobileMenu" class="mobile-menu">
         <button id="closeMobileMenu" class="self-end p-2 text-gray-400 hover:text-gray-200">
-            <svg class="h-6 w-6" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+            <svg class="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                 <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path>
-                </svg>
+            </svg>
         </button>
         
         <!-- Features for mobile -->
@@ -468,180 +359,153 @@
                         Language
                         <svg class="ml-2 w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7"></path></svg>
                     </button>
-                    <div class="dropdown-content-sub absolute mt-0 w-32 rounded-md shadow-lg bg-white ring-1 ring-black ring-opacity-5 focus:outline-none">
-                        <a href="#" onclick="changeLanguage('en'); closeMobileMenu();" class="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-100 dropdown-item">English</a>
-                        <a href="#" onclick="changeLanguage('es'); closeMobileMenu();" class="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-100 dropdown-item">Español</a>
-                        <a href="#" onclick="changeLanguage('pt'); closeMobileMenu();" class="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-100 dropdown-item">Português</a>
+                    <div class="dropdown-content-sub absolute left-full top-0 mt-0 w-32 rounded-md shadow-lg bg-white ring-1 ring-black ring-opacity-5 focus:outline-none">
+                        <a href="#" onclick="changeLanguage('en')" class="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-100 dropdown-item">English</a>
+                        <a href="#" onclick="changeLanguage('es')" class="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-100 dropdown-item">Español</a>
+                        <a href="#" onclick="changeLanguage('pt')" class="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-100 dropdown-item">Português</a>
                     </div>
                 </div>
             </div>
         </div>
     </div>
 
-    <section id="hero" class="relative bg-gradient-to-r from-indigo-600 to-purple-700 text-white py-20 px-4 rounded-b-3xl shadow-xl">
-        <div class="container mx-auto text-center animate-on-scroll">
-            <h1 class="text-5xl md:text-6xl font-extrabold leading-tight mb-6 animate-pulse" data-translate-key="hero-heading">
-                Revolutionizing IT Talent Acquisition with AI
+    <!-- Hero Section -->
+    <section class="bg-gradient-to-r from-indigo-600 to-purple-700 text-white py-20 px-4 rounded-xl shadow-lg mx-auto max-w-7xl mt-12">
+        <div class="container mx-auto text-center">
+            <h1 class="text-5xl font-bold mb-6 leading-tight" data-translate-key="hero-heading">
+                Revolutionize Your Recruitment with <span class="text-yellow-300">AI</span>
             </h1>
-            <p class="text-xl md:text-2xl mb-8 opacity-90" data-translate-key="hero-subheading">
-                Leveraging cutting-edge Artificial Intelligence to connect you with premier IT professionals, faster and smarter.
+            <p class="text-xl mb-10 max-w-3xl mx-auto" data-translate-key="hero-subheading">
+                Rekru.AI streamlines your hiring process, from intelligent resume analysis to automated job description generation and candidate sourcing.
             </p>
-            <a href="#contact" class="inline-block bg-white text-indigo-700 hover:bg-gray-100 px-8 py-4 rounded-full font-semibold text-lg shadow-lg transform hover:scale-105 transition duration-300 ease-in-out" data-translate-key="hero-button">
-                Discover Your Next Hire
+            <a href="#features" class="bg-white text-indigo-700 py-3 px-8 rounded-full font-semibold text-lg hover:bg-gray-100 transition duration-300 ease-in-out shadow-lg transform hover:scale-105" data-translate-key="hero-cta">
+                Explore Features
             </a>
         </div>
     </section>
 
-    <!-- User Data Section removed as per request for no authentication -->
-
-    <section id="about" class="py-16 px-4 bg-gray-100 rounded-xl shadow-lg mx-auto max-w-6xl mt-12 animate-on-scroll">
+    <!-- Features Section -->
+    <section id="features" class="py-16 px-4 bg-gray-100 rounded-xl shadow-lg mx-auto max-w-7xl mt-12">
         <div class="container mx-auto text-center">
-            <h2 class="text-4xl font-bold text-indigo-800 mb-8" data-translate-key="about-heading">About Rekru.AI</h2>
-            <div class="text-lg leading-relaxed max-w-3xl mx-auto" data-translate-key="about-text-1">
-                <p class="mb-4">
-                    Rekru.AI is at the forefront of IT recruitment, specializing in integrating advanced AI tools to redefine how businesses find and secure top-tier tech talent.
-                </p>
-                <p data-translate-key="about-text-2">
-                    Our mission is to streamline your hiring process, reduce costs, and ensure a perfect match between candidates and company culture, all powered by intelligent automation and data-driven insights. Our goal is to empower companies to build high-performing IT teams with unprecedented efficiency and precision.
-                </p>
-            </div>
-
-            <div class="mt-16 text-center">
-                <h2 class="text-4xl font-bold text-indigo-800 mb-8" data-translate-key="why-choose-heading">Why Rekru.AI is Your Best Choice</h2>
-                <div class="grid md:grid-cols-3 gap-8">
-                    <div class="bg-gray-50 p-6 rounded-lg shadow-md gradient-border-b animate-card">
-                        <h3 class="text-xl font-semibold text-gray-900 mb-3" data-translate-key="benefit-1-title">Unmatched Precision</h3>
-                        <p class="text-gray-700" data-translate-key="benefit-1-text">Our AI-driven algorithms pinpoint candidates with the exact skills and cultural fit your company needs, reducing mis-hires.</p>
-                    </div>
-                    <div class="bg-gray-50 p-6 rounded-lg shadow-md gradient-border-b animate-card">
-                        <h3 class="text-xl font-semibold text-gray-900 mb-3" data-translate-key="benefit-2-title">Accelerated Timelines</h3>
-                        <p class="text-gray-700" data-translate-key="benefit-2-text">Significantly shorten your time-to-hire with automated processes and intelligent candidate pipeline management.</p>
-                    </div>
-                    <div class="bg-gray-50 p-6 rounded-lg shadow-md gradient-border-b animate-card">
-                        <h3 class="text-xl font-semibold text-gray-900 mb-3" data-translate-key="benefit-3-title">Cost Efficiency</h3>
-                        <p class="text-gray-700" data-translate-key="benefit-3-text">Optimize your recruitment budget by leveraging AI to reduce manual effort and improve hiring outcomes.</p>
-                    </div>
-                    <div class="bg-gray-50 p-6 rounded-lg shadow-md gradient-border-b animate-card">
-                        <h3 class="text-xl font-semibold text-gray-900 mb-3" data-translate-key="benefit-4-title">Expert Human Touch</h3>
-                        <p class="text-gray-700" data-translate-key="benefit-4-text">Our AI tools augment, not replace, our experienced recruiters who provide strategic guidance and personalized support.</p>
-                    </div>
-                    <div class="bg-gray-50 p-6 rounded-lg shadow-md gradient-border-b animate-card">
-                        <h3 class="text-xl font-semibold text-gray-900 mb-3" data-translate-key="benefit-5-title">Scalable Solutions</h3>
-                        <p class="text-gray-700" data-translate-key="benefit-5-text">Whether you're hiring one specialist or building an entire team, our solutions adapt to your evolving needs.</p>
-                    </div>
-                    <div class="bg-gray-50 p-6 rounded-lg shadow-md gradient-border-b animate-card">
-                        <h3 class="text-xl font-semibold text-gray-900 mb-3" data-translate-key="benefit-6-title">Future-Proof Recruitment</h3>
-                        <p class="text-700" data-translate-key="benefit-6-text">Stay ahead in the competitive IT market by adopting the most innovative AI-driven recruitment strategies.</p>
-                    </div>
-                </div>
-            </div>
-
-            <div class="mt-16 text-center">
-                <h2 class="text-4xl font-bold text-indigo-800 mb-8" data-translate-key="ai-edge-heading">Our AI Edge: Driving Recruitment Innovation</h2>
-                <p class="text-lg text-gray-700 mb-10 max-w-3xl mx-auto" data-translate-key="ai-edge-subheading">
-                    At Rekru.AI, we continuously evaluate and integrate the most sophisticated AI technologies to enhance every stage of the recruitment lifecycle. Our proprietary and third-party tools ensure efficiency, accuracy, and superior results.
-                </p>
-                <div class="grid md:grid-cols-2 gap-8 text-left">
-                    <div class="bg-white p-6 rounded-lg shadow-md gradient-border-l animate-card">
-                        <h3 class="text-2xl font-semibold text-gray-900 mb-3" data-translate-key="ai-tool-1-title">Natural Language Processing (NLP)</h3>
-                        <p class="text-gray-700" data-translate-key="ai-tool-1-text">
-                            For advanced resume parsing, sentiment analysis of candidate communications, and understanding complex job descriptions to find the perfect semantic matches.
-                        </p>
-                    </div>
-                    <div class="bg-white p-6 rounded-lg shadow-md gradient-border-l animate-card">
-                        <h3 class="text-2xl font-semibold text-gray-900 mb-3" data-translate-key="ai-tool-2-title">Machine Learning (ML) Algorithms</h3>
-                        <p class="text-gray-700" data-translate-key="ai-tool-2-text">
-                            Powering predictive analytics for candidate success, talent market trend forecasting, and optimizing job ad performance based on historical data.
-                        </p>
-                    </div>
-                    <div class="bg-white p-6 rounded-lg shadow-md gradient-border-l animate-card">
-                        <h3 class="text-2xl font-semibold text-gray-900 mb-3" data-translate-key="ai-tool-3-title">Intelligent Automation Platforms</h3>
-                        <p class="text-gray-700" data-translate-key="ai-tool-3-text">
-                            Automating routine tasks like scheduling interviews, sending personalized follow-ups, and managing candidate pipelines, freeing up recruiters for strategic work.
-                        </p>
-                    </div>
-                    <div class="bg-white p-6 rounded-lg shadow-md gradient-border-l animate-card">
-                        <h3 class="text-2xl font-semibold text-gray-900 mb-3" data-translate-key="ai-tool-4-title">AI-Powered Analytics & Dashboards</h3>
-                        <p class="text-gray-700" data-translate-key="ai-tool-4-text">
-                            Providing real-time insights into your recruitment pipeline, performance metrics, and market trends for strategic decision-making.</p>
-                    </div>
-                </div>
-            </div>
-        </div>
-    </section>
-
-    <section id="features-building" class="py-16 px-4 bg-gray-50 rounded-xl shadow-lg mx-auto max-w-6xl mt-12 animate-on-scroll">
-        <div class="container mx-auto">
-            <h2 class="text-4xl font-bold text-center text-indigo-800 mb-12" data-translate-key="features-building-heading">Features We Are Building: The Rekru.AI Advantage</h2>
-            <div class="grid md:grid-cols-2 lg:grid-cols-3 gap-8">
-                <div class="bg-white p-6 rounded-lg shadow-lg transform hover:scale-105 transition duration-300 ease-in-out gradient-border-b animate-card">
-                    <h3 class="text-2xl font-semibold text-gray-900 mb-4" data-translate-key="feature-1-title">AI-Powered Resume Analysis</h3>
-                    <p class="text-gray-700" data-translate-key="feature-1-text">
-                        Our core feature for deep diving into resumes, extracting key information, and matching against job requirements with high accuracy.
+            <h2 class="text-4xl font-bold text-indigo-800 mb-12" data-translate-key="features-heading">Our Powerful AI Features</h2>
+            <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
+                <!-- Feature 1: AI Resume Analyzer -->
+                <div class="bg-white p-8 rounded-lg shadow-md border-t-4 border-indigo-500 transform hover:scale-105 transition duration-300 ease-in-out">
+                    <div class="text-5xl mb-4 text-indigo-600">📄</div>
+                    <h3 class="text-2xl font-bold text-gray-800 mb-4" data-translate-key="feature1-title">AI Resume Analyzer</h3>
+                    <p class="text-gray-700 mb-6" data-translate-key="feature1-description">
+                        Instantly analyze resumes against job requirements, get match percentages, and a recruiter's perspective.
                     </p>
+                    <a href="/resume-analyzer.html" class="text-indigo-600 hover:text-indigo-800 font-semibold flex items-center justify-center" data-translate-key="feature-learn-more">
+                        Learn More
+                        <svg class="ml-2 w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 8l4 4m0 0l-4 4m4-4H3"></path></svg>
+                    </a>
                 </div>
-                <div class="bg-white p-6 rounded-lg shadow-lg transform hover:scale-105 transition duration-300 ease-in-out gradient-border-b animate-card">
-                    <h3 class="text-2xl font-semibold text-gray-900 mb-4" data-translate-key="feature-2-title">Batch Candidate Screening</h3>
-                    <p class="text-gray-700" data-translate-key="feature-2-text">
-                        Efficiently process hundreds of resumes simultaneously, ranking candidates and providing summary reports for quick decision-making.
+                <!-- Feature 2: Advanced Analyzer (Batch) -->
+                <div class="bg-white p-8 rounded-lg shadow-md border-t-4 border-purple-500 transform hover:scale-105 transition duration-300 ease-in-out">
+                    <div class="text-5xl mb-4 text-purple-600">📊</div>
+                    <h3 class="text-2xl font-bold text-gray-800 mb-4" data-translate-key="feature2-title">Advanced Analyzer (Batch)</h3>
+                    <p class="text-gray-700 mb-6" data-translate-key="feature2-description">
+                        Process multiple resumes at once, compare candidates, and get summarized insights for bulk hiring.
                     </p>
+                    <a href="/advanced-analyzer.html" class="text-purple-600 hover:text-purple-800 font-semibold flex items-center justify-center" data-translate-key="feature-learn-more">
+                        Learn More
+                        <svg class="ml-2 w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 8l4 4m0 0l-4 4m4-4H3"></path></svg>
+                    </a>
                 </div>
-                <div class="bg-white p-6 rounded-lg shadow-lg transform hover:scale-105 transition duration-300 ease-in-out gradient-border-b animate-card">
-                    <h3 class="text-2xl font-semibold text-gray-900 mb-4" data-translate-key="feature-3-title">Automated JD Generation</h3>
-                    <p class="text-gray-700" data-translate-key="feature-3-text">
-                        Generate comprehensive and attractive job descriptions tailored to your needs, saving time and ensuring consistency.
+                <!-- Feature 3: Job Description Generator -->
+                <div class="bg-white p-8 rounded-lg shadow-md border-t-4 border-pink-500 transform hover:scale-105 transition duration-300 ease-in-out">
+                    <div class="text-5xl mb-4 text-pink-600">✍️</div>
+                    <h3 class="text-2xl font-bold text-gray-800 mb-4" data-translate-key="feature3-title">Job Description Generator</h3>
+                    <p class="text-gray-700 mb-6" data-translate-key="feature3-description">
+                        Generate comprehensive and engaging job descriptions tailored to your needs in seconds.
                     </p>
+                    <a href="/jd-generator.html" class="text-pink-600 hover:text-pink-800 font-semibold flex items-center justify-center" data-translate-key="feature-learn-more">
+                        Learn More
+                        <svg class="ml-2 w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 8l4 4m0 0l-4 4m4-4H3"></path></svg>
+                    </a>
                 </div>
-                <div class="bg-white p-6 rounded-lg shadow-lg transform hover:scale-105 transition duration-300 ease-in-out gradient-border-b animate-card">
-                    <h3 class="text-2xl font-semibold text-gray-900 mb-4" data-translate-key="feature-4-title">Smart Candidate Outreach</h3>
-                    <p class="text-gray-700" data-translate-key="feature-4-text">
-                        Craft personalized and engaging outreach messages using AI, increasing response rates and improving candidate experience.
+                <!-- Feature 4: AI Sourcer/Contact Manager -->
+                <div class="bg-white p-8 rounded-lg shadow-md border-t-4 border-blue-500 transform hover:scale-105 transition duration-300 ease-in-out">
+                    <div class="text-5xl mb-4 text-blue-600">🔍</div>
+                    <h3 class="text-2xl font-bold text-gray-800 mb-4" data-translate-key="feature4-title">AI Sourcer/Contact Manager</h3>
+                    <p class="text-gray-700 mb-6" data-translate-key="feature4-description">
+                        Intelligently source candidates and manage your contacts with AI-powered insights.
                     </p>
+                    <a href="/ai-sourcer.html" class="text-blue-600 hover:text-blue-800 font-semibold flex items-center justify-center" data-translate-key="feature-learn-more">
+                        Learn More
+                        <svg class="ml-2 w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 8l4 4m0 0l-4 4m4-4H3"></path></svg>
+                    </a>
                 </div>
-                <div class="bg-white p-6 rounded-lg shadow-lg transform hover:scale-105 transition duration-300 ease-in-out gradient-border-b animate-card">
-                    <h3 class="text-2xl font-semibold text-gray-900 mb-4" data-translate-key="feature-5-title">Platform-Specific JD Posting</h3>
-                    <p class="text-gray-700" data-translate-key="feature-5-text">
-                        Adapt your job descriptions for optimal visibility and engagement across various job boards and social media platforms.
+                <!-- Feature 5: Posting JD in my Platforms -->
+                <div class="bg-white p-8 rounded-lg shadow-md border-t-4 border-green-500 transform hover:scale-105 transition duration-300 ease-in-out">
+                    <div class="text-5xl mb-4 text-green-600">📢</div>
+                    <h3 class="text-2xl font-bold text-gray-800 mb-4" data-translate-key="feature5-title">Posting JD in my Platforms</h3>
+                    <p class="text-gray-700 mb-6" data-translate-key="feature5-description">
+                        Seamlessly post your generated job descriptions to various platforms with ease.
                     </p>
+                    <a href="/jd-poster.html" class="text-green-600 hover:text-green-800 font-semibold flex items-center justify-center" data-translate-key="feature-learn-more">
+                        Learn More
+                        <svg class="ml-2 w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 8l4 4m0 0l-4 4m4-4H3"></path></svg>
+                    </a>
                 </div>
-                <div class="bg-white p-6 rounded-lg shadow-lg transform hover:scale-105 transition duration-300 ease-in-out gradient-border-b animate-card">
-                    <h3 class="text-2xl font-semibold text-gray-900 mb-4" data-translate-key="feature-6-title">Integrated Contact Management</h3>
-                    <p class="text-gray-700" data-translate-key="feature-6-text">
-                        Keep track of all your candidate interactions, statuses, and notes within a centralized, easy-to-use system.
+                <!-- Feature 6: JD Enhancer -->
+                <div class="bg-white p-8 rounded-lg shadow-md border-t-4 border-yellow-500 transform hover:scale-105 transition duration-300 ease-in-out">
+                    <div class="text-5xl mb-4 text-yellow-600">✨</div>
+                    <h3 class="text-2xl font-bold text-gray-800 mb-4" data-translate-key="feature6-title">JD Enhancer</h3>
+                    <p class="text-gray-700 mb-6" data-translate-key="feature6-description">
+                        Refine and optimize your existing job descriptions for better candidate attraction and SEO.
                     </p>
+                    <a href="/pages/jd-enhancer.html" class="text-yellow-600 hover:text-yellow-800 font-semibold flex items-center justify-center" data-translate-key="feature-learn-more">
+                        Learn More
+                        <svg class="ml-2 w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 8l4 4m0 0l-4 4m4-4H3"></path></svg>
+                    </a>
                 </div>
             </div>
         </div>
     </section>
 
-    <section id="contact" class="py-16 px-4 bg-gray-100 rounded-xl shadow-lg mx-auto max-w-6xl mt-12 animate-on-scroll">
+    <!-- Call to Action Section -->
+    <section class="bg-gradient-to-r from-purple-700 to-indigo-600 text-white py-16 px-4 rounded-xl shadow-lg mx-auto max-w-7xl mt-12">
+        <div class="container mx-auto text-center">
+            <h2 class="text-4xl font-bold mb-6" data-translate-key="cta-heading">Ready to Transform Your Hiring?</h2>
+            <p class="text-xl mb-8 max-w-2xl mx-auto" data-translate-key="cta-subheading">
+                Join Rekru.AI today and experience the future of intelligent recruitment.
+            </p>
+            <a href="/pages/signup.html" class="bg-white text-purple-700 py-3 px-8 rounded-full font-semibold text-lg hover:bg-gray-100 transition duration-300 ease-in-out shadow-lg transform hover:scale-105" data-translate-key="cta-signup">
+                Sign Up for Free
+            </a>
+        </div>
+    </section>
+
+    <!-- Contact Section -->
+    <section id="contact" class="py-16 px-4 bg-gray-50 rounded-xl shadow-lg mx-auto max-w-7xl mt-12">
         <div class="container mx-auto text-center">
             <h2 class="text-4xl font-bold text-indigo-800 mb-8" data-translate-key="contact-heading">Get in Touch</h2>
             <p class="text-lg text-gray-700 mb-10 max-w-2xl mx-auto" data-translate-key="contact-subheading">
-                Ready to transform your IT recruitment? Contact us today to learn how Rekru.AI can help you find the best talent.
+                Have questions or need a custom solution? Reach out to our team.
             </p>
-            <div class="max-w-xl mx-auto bg-white p-8 rounded-lg shadow-md border-t-4 border-indigo-500">
-                <form class="space-y-6">
-                    <div>
-                        <label for="name" class="block text-sm font-medium text-gray-700 text-left" data-translate-key="contact-name-label">Name</label>
-                        <input type="text" id="name" name="name" class="mt-1 block w-full p-3 border border-gray-300 rounded-md shadow-sm focus:ring-indigo-500 focus:border-indigo-500 dark:bg-gray-700 dark:border-gray-600 dark:text-white" placeholder="Your Name" required>
-                    </div>
-                    <div>
-                        <label for="email" class="block text-sm font-medium text-gray-700 text-left" data-translate-key="contact-email-label">Email</label>
-                        <input type="email" id="email" name="email" class="mt-1 block w-full p-3 border border-gray-300 rounded-md shadow-sm focus:ring-indigo-500 focus:border-indigo-500 dark:bg-gray-700 dark:border-gray-600 dark:text-white" placeholder="your@example.com" required>
-                    </div>
-                    <div>
-                        <label for="message" class="block text-sm font-medium text-gray-700 text-left" data-translate-key="contact-message-label">Message</label>
-                        <textarea id="message" name="message" rows="4" class="mt-1 block w-full p-3 border border-gray-300 rounded-md shadow-sm focus:ring-indigo-500 focus:border-indigo-500 dark:bg-gray-700 dark:border-gray-600 dark:text-white" placeholder="Tell us how we can help you..." required></textarea>
-                    </div>
-                    <button type="submit" class="w-full bg-indigo-700 text-white py-3 px-6 rounded-md font-semibold hover:bg-indigo-800 transition duration-300 ease-in-out shadow-md transform hover:scale-105" data-translate-key="contact-submit-button">
-                        Send Message
-                    </button>
-                </form>
-            </div>
+            <form class="max-w-xl mx-auto bg-white p-8 rounded-lg shadow-md dark:bg-gray-700">
+                <div class="mb-6 text-left">
+                    <label for="name" class="block text-gray-700 text-sm font-semibold mb-2 dark:text-gray-200" data-translate-key="contact-name-label">Name</label>
+                    <input type="text" id="name" name="name" class="w-full p-3 border border-gray-300 rounded-md focus:outline-none focus:ring-1 focus:ring-indigo-500 dark:bg-gray-800 dark:border-gray-600 dark:text-white" placeholder="Your Name" data-translate-key="contact-name-placeholder">
+                </div>
+                <div class="mb-6 text-left">
+                    <label for="email" class="block text-gray-700 text-sm font-semibold mb-2 dark:text-gray-200" data-translate-key="contact-email-label">Email</label>
+                    <input type="email" id="email" name="email" class="w-full p-3 border border-gray-300 rounded-md focus:outline-none focus:ring-1 focus:ring-indigo-500 dark:bg-gray-800 dark:border-gray-600 dark:text-white" placeholder="your@example.com" data-translate-key="contact-email-placeholder">
+                </div>
+                <div class="mb-6 text-left">
+                    <label for="message" class="block text-gray-700 text-sm font-semibold mb-2 dark:text-gray-200" data-translate-key="contact-message-label">Message</label>
+                    <textarea id="message" name="message" rows="5" class="w-full p-3 border border-gray-300 rounded-md focus:outline-none focus:ring-1 focus:ring-indigo-500 dark:bg-gray-800 dark:border-gray-600 dark:text-white" placeholder="Your message..." data-translate-key="contact-message-placeholder"></textarea>
+                </div>
+                <button type="submit" class="bg-indigo-700 text-white py-3 px-8 rounded-md font-semibold hover:bg-indigo-800 transition duration-300 ease-in-out shadow-md transform hover:scale-105" data-translate-key="contact-send-button">
+                    Send Message
+                </button>
+            </form>
         </div>
     </section>
 
+    <!-- Footer Section -->
     <footer class="bg-white shadow-inner py-8 px-4 mt-12 rounded-t-lg">
         <div class="container mx-auto text-center text-gray-600 dark:text-gray-400">
             <p class="mb-4" data-translate-key="footer-copyright">&copy; 2025 Rekru.AI. All rights reserved.</p>
@@ -715,7 +579,6 @@
             });
         }
 
-
         // Universal Dropdown Toggles
         document.querySelectorAll('.dropdown-toggle').forEach(button => {
             button.addEventListener('click', function(event) {
@@ -723,8 +586,7 @@
                 const dropdownContent = this.nextElementSibling;
                 // Close other open dropdowns at the same level
                 document.querySelectorAll('.dropdown-content').forEach(content => {
-                    // Ensure we only close siblings of the current dropdown's parent
-                    if (content !== dropdownContent && content.parentElement === this.parentElement) {
+                    if (content !== dropdownContent && content.closest('.dropdown') === this.closest('.dropdown')) {
                         content.style.display = 'none';
                     }
                 });
@@ -737,7 +599,7 @@
             button.addEventListener('click', function(event) {
                 event.stopPropagation(); // Prevent click from closing parent dropdown or other sub-dropdowns
                 const dropdownContentSub = this.nextElementSibling;
-                // Close other open sub-dropdowns within the same parent dropdown-content
+                // Close other open sub-dropdowns
                 this.closest('.dropdown-content').querySelectorAll('.dropdown-content-sub').forEach(content => {
                     if (content !== dropdownContentSub) {
                         content.style.display = 'none';
@@ -759,12 +621,10 @@
             }
         });
 
-
         // Mobile Menu Functionality
         const hamburgerButton = document.getElementById('hamburgerButton');
         const closeMobileMenuButton = document.getElementById('closeMobileMenu');
         const mobileMenu = document.getElementById('mobileMenu');
-        const mobileMenuItems = document.querySelectorAll('.mobile-menu-item'); // This will be empty now, as direct links are handled by dropdowns
         const mobileDropdownToggles = document.querySelectorAll('.mobile-dropdown-toggle');
 
         if (hamburgerButton) { // Check if element exists
@@ -780,14 +640,14 @@
         }
 
         // Function to close mobile menu
-        function closeMobileMenu() {
+        window.closeMobileMenu = () => {
             if (mobileMenu) mobileMenu.classList.remove('is-open');
         }
 
         // Close mobile menu when a link is clicked within the mobile menu (for dropdown items)
         mobileMenu.querySelectorAll('a').forEach(item => {
             item.addEventListener('click', () => {
-                closeMobileMenu();
+                window.closeMobileMenu();
             });
         });
 
@@ -799,35 +659,10 @@
             });
         });
 
-
-        // Scroll Animations
-        const animateOnScrollElements = document.querySelectorAll('.animate-on-scroll');
-        const animateCardElements = document.querySelectorAll('.animate-card');
-
-        const observerOptions = {
-            root: null, // viewport
-            rootMargin: '0px',
-            threshold: 0.1 // 10% of element visible
-        };
-
-        const observer = new IntersectionObserver((entries, observer) => {
-            entries.forEach(entry => {
-                if (entry.isIntersecting) {
-                    entry.target.classList.add('is-visible');
-                    observer.unobserve(entry.target); // Stop observing once visible
-                }
-            });
-        }, observerOptions);
-
-        animateOnScrollElements.forEach(el => observer.observe(el));
-        animateCardElements.forEach(el => observer.observe(el));
-
         // Language Translation
         const translations = {
             en: {
                 "logo-text": "Rekru.AI",
-                "nav-about": "About Us",
-                "nav-features-building": "Features We Are Building",
                 "nav-features": "Features",
                 "feature-resume-analyzer": "Resume Analyzer",
                 "feature-advanced-analyzer": "Advanced Analyzer",
@@ -835,68 +670,40 @@
                 "feature-ai-sourcer": "AI Sourcer/Contact Manager",
                 "feature-jd-poster": "Posting JD in my Platforms",
                 "feature-jd-enhancer": "✨ JD Enhancer",
-                "nav-contact": "Contact",
+                "nav-language": "Language",
                 "nav-login": "Login",
                 "nav-signup": "Sign Up",
-                "nav-language": "Language",
-                "nav-settings": "Settings", /* Added for settings button */
-                "settings-dark-mode": "Light/Dark Mode", /* Added for dark mode toggle in settings */
-                "hero-heading": "Revolutionizing IT Talent Acquisition with AI",
-                "hero-subheading": "Leveraging cutting-edge Artificial Intelligence to connect you with premier IT professionals, faster and smarter.",
-                "hero-button": "Discover Your Next Hire",
-                "user-data-heading": "Your Personalized Dashboard",
-                "user-data-welcome": "Welcome, <span id=\"loggedInUserEmail\" class=\"font-semibold\"></span>!",
-                "user-preferences-title": "Your Preferences",
-                "favorite-tech-stack-label": "Favorite Tech Stack:",
-                "save-preferences-button": "Save Preferences",
-                "about-heading": "About Rekru.AI",
-                "about-text-1": "<p class=\"mb-4\">Rekru.AI is at the forefront of IT recruitment, specializing in integrating advanced AI tools to redefine how businesses find and secure top-tier tech talent.</p><p>Nuestra misión es agilizar su proceso de contratación, reducir costos y asegurar una combinación perfecta entre los candidatos y la cultura de la empresa, todo impulsado por la automatización inteligente y los conocimientos basados en datos. Nuestro objetivo es capacitar a las empresas para construir equipos de TI de alto rendimiento con una eficiencia y precisión sin precedentes.</p>",
-                "about-text-2": "Our mission is to streamline your hiring process, reduce costs, and ensure a perfect match between candidates and company culture, all powered by intelligent automation and data-driven insights. Our goal is to empower companies to build high-performing IT teams with unprecedented efficiency and precision.",
-                "why-choose-heading": "Why Rekru.AI is Your Best Choice",
-                "benefit-1-title": "Unmatched Precision",
-                "benefit-1-text": "Our AI-driven algorithms pinpoint candidates with the exact skills and cultural fit your company needs, reducing mis-hires.",
-                "benefit-2-title": "Accelerated Timelines",
-                "benefit-2-text": "Significantly shorten your time-to-hire with automated processes and intelligent candidate pipeline management.",
-                "benefit-3-title": "Cost Efficiency",
-                "benefit-3-text": "Optimize your recruitment budget by leveraging AI to reduce manual effort and improve hiring outcomes.",
-                "benefit-4-title": "Expert Human Touch",
-                "benefit-4-text": "Our AI tools augment, not replace, our experienced recruiters who provide strategic guidance and personalized support.",
-                "benefit-5-title": "Scalable Solutions",
-                "benefit-5-text": "Whether you're hiring one specialist or building an entire team, our solutions adapt to your evolving needs.",
-                "benefit-6-title": "Future-Proof Recruitment",
-                "benefit-6-text": "Stay ahead in the competitive IT market by adopting the most innovative AI-driven recruitment strategies.",
-                "ai-edge-heading": "Our AI Edge: Driving Recruitment Innovation",
-                "ai-edge-subheading": "At Rekru.AI, we continuously evaluate and integrate the most sophisticated AI technologies to enhance every stage of the recruitment lifecycle. Our proprietary and third-party tools ensure efficiency, accuracy, and superior results.",
-                "ai-tool-1-title": "Natural Language Processing (NLP)",
-                "ai-tool-1-text": "For advanced resume parsing, sentiment analysis of candidate communications, and understanding complex job descriptions to find the perfect semantic matches.",
-                "ai-tool-2-title": "Machine Learning (ML) Algorithms",
-                "ai-tool-2-text": "Powering predictive analytics for candidate success, talent market trend forecasting, and optimizing job ad performance based on historical data.",
-                "ai-tool-3-title": "Intelligent Automation Platforms",
-                "ai-tool-3-text": "Automating routine tasks like scheduling interviews, sending personalized follow-ups, and managing candidate pipelines, freeing up recruiters for strategic work.",
-                "ai-tool-4-title": "AI-Powered Analytics & Dashboards",
-                "ai-tool-4-text": "Providing real-time insights into your recruitment pipeline, performance metrics, and market trends for strategic decision-making.",
-                "jd-enhancer-heading": "✨ Enhance Your Job Descriptions with AI",
-                "jd-enhancer-subheading": "Provide a basic job description, and our AI will transform it into a comprehensive, attractive, and optimized listing to attract top talent.",
-                "jd-input-label": "Enter your basic Job Description here:",
-                "features-building-heading": "Features We Are Building: The Rekru.AI Advantage",
-                "feature-1-title": "AI-Powered Resume Analysis",
-                "feature-1-text": "Our core feature for deep diving into resumes, extracting key information, and matching against job requirements with high accuracy.",
-                "feature-2-title": "Batch Candidate Screening",
-                "feature-2-text": "Efficiently process hundreds of resumes simultaneously, ranking candidates and providing summary reports for quick decision-making.",
-                "feature-3-title": "Automated JD Generation",
-                "feature-3-text": "Generate comprehensive and attractive job descriptions tailored to your needs, saving time and ensuring consistency.",
-                "feature-4-title": "Smart Candidate Outreach",
-                "feature-4-text": "Craft personalized and engaging outreach messages using AI, increasing response rates and improving candidate experience.",
-                "feature-5-title": "Platform-Specific JD Posting",
-                "feature-5-text": "Adapt your job descriptions for optimal visibility and engagement across various job boards and social media platforms.",
-                "feature-6-title": "Integrated Contact Management",
-                "feature-6-text": "Keep track of all your candidate interactions, statuses, and notes within a centralized, easy-to-use system.",
+                "nav-settings": "Settings",
+                "settings-dark-mode": "Light/Dark Mode",
+                "hero-heading": "Revolutionize Your Recruitment with AI",
+                "hero-subheading": "Rekru.AI streamlines your hiring process, from intelligent resume analysis to automated job description generation and candidate sourcing.",
+                "hero-cta": "Explore Features",
+                "features-heading": "Our Powerful AI Features",
+                "feature1-title": "AI Resume Analyzer",
+                "feature1-description": "Instantly analyze resumes against job requirements, get match percentages, and a recruiter's perspective.",
+                "feature2-title": "Advanced Analyzer (Batch)",
+                "feature2-description": "Process multiple resumes at once, compare candidates, and get summarized insights for bulk hiring.",
+                "feature3-title": "Job Description Generator",
+                "feature3-description": "Generate comprehensive and engaging job descriptions tailored to your needs in seconds.",
+                "feature4-title": "AI Sourcer/Contact Manager",
+                "feature4-description": "Intelligently source candidates and manage your contacts with AI-powered insights.",
+                "feature5-title": "Posting JD in my Platforms",
+                "feature5-description": "Seamlessly post your generated job descriptions to various platforms with ease.",
+                "feature6-title": "JD Enhancer",
+                "feature6-description": "Refine and optimize your existing job descriptions for better candidate attraction and SEO.",
+                "feature-learn-more": "Learn More",
+                "cta-heading": "Ready to Transform Your Hiring?",
+                "cta-subheading": "Join Rekru.AI today and experience the future of intelligent recruitment.",
+                "cta-signup": "Sign Up for Free",
                 "contact-heading": "Get in Touch",
-                "contact-subheading": "Ready to transform your IT recruitment? Contact us today to learn how Rekru.AI can help you find the best talent.",
+                "contact-subheading": "Have questions or need a custom solution? Reach out to our team.",
                 "contact-name-label": "Name",
+                "contact-name-placeholder": "Your Name",
                 "contact-email-label": "Email",
+                "contact-email-placeholder": "your@example.com",
                 "contact-message-label": "Message",
-                "contact-submit-button": "Send Message",
+                "contact-message-placeholder": "Your message...",
+                "contact-send-button": "Send Message",
                 "footer-copyright": "&copy; 2025 Rekru.AI. All rights reserved.",
                 "footer-privacy": "Privacy Policy",
                 "footer-terms": "Terms of Service",
@@ -904,8 +711,6 @@
             },
             es: {
                 "logo-text": "Rekru.AI",
-                "nav-about": "Nosotros",
-                "nav-features-building": "Características en Desarrollo",
                 "nav-features": "Características",
                 "feature-resume-analyzer": "Analizador de Currículums",
                 "feature-advanced-analyzer": "Analizador Avanzado",
@@ -913,67 +718,40 @@
                 "feature-ai-sourcer": "Buscador/Gestor de Contactos con IA",
                 "feature-jd-poster": "Publicar Descripciones de Puesto en mis Plataformas",
                 "feature-jd-enhancer": "✨ Mejorador de Descripciones de Puesto",
-                "nav-contact": "Contacto",
+                "nav-language": "Idioma",
                 "nav-login": "Iniciar Sesión",
                 "nav-signup": "Registrarse",
                 "nav-settings": "Configuración",
                 "settings-dark-mode": "Modo Claro/Oscuro",
-                "hero-heading": "Revolucionando la Adquisición de Talento TI con IA",
-                "hero-subheading": "Aprovechando la Inteligencia Artificial de vanguardia para conectarte con profesionales de TI de primer nivel, más rápido y de manera más inteligente.",
-                "hero-button": "Descubre tu Próximo Contratado",
-                "user-data-heading": "Tu Panel Personalizado",
-                "user-data-welcome": "¡Bienvenido, <span id=\"loggedInUserEmail\" class=\"font-semibold\"></span>!",
-                "user-preferences-title": "Tus Preferencias",
-                "favorite-tech-stack-label": "Pila de Tecnología Favorita:",
-                "save-preferences-button": "Guardar Preferencias",
-                "about-heading": "Acerca de Rekru.AI",
-                "about-text-1": "<p class=\"mb-4\">Rekru.AI está a la vanguardia del reclutamiento de TI, especializándose en la integración de herramientas avanzadas de IA para redefinir cómo las empresas encuentran y aseguran el talento tecnológico de primer nivel.</p><p>Nuestra misión es agilizar su proceso de contratación, reducir costos y asegurar una combinación perfecta entre los candidatos y la cultura de la empresa, todo impulsado por la automatización inteligente y los conocimientos basados en datos. Nuestro objetivo es capacitar a las empresas para construir equipos de TI de alto rendimiento con una eficiencia y precisión sin precedentes.</p>",
-                "about-text-2": "Nuestra misión es agilizar su proceso de contratación, reducir costos y asegurar una combinación perfecta entre los candidatos y la cultura de la empresa, todo impulsado por la automación inteligente y los conocimientos basados en datos. Nuestro objetivo es capacitar a las empresas para construir equipos de TI de alto rendimiento con una eficiencia y precisión sin precedentes.",
-                "why-choose-heading": "¿Por qué Rekru.AI es tu mejor opción?",
-                "benefit-1-title": "Precisión Inigualable",
-                "benefit-1-text": "Nuestros algoritmos impulsados por IA identifican candidatos con las habilidades exactas y el ajuste cultural que tu empresa necesita, reduciendo errores de contratación.",
-                "benefit-2-title": "Plazos Acelerados",
-                "benefit-2-text": "Acorta significativamente tu tiempo de contratación con procesos automatizados y una gestión inteligente de la cartera de candidatos.",
-                "benefit-3-title": "Eficiencia de Costos",
-                "benefit-3-text": "Optimiza tu presupuesto de reclutamiento aprovechando la IA para reducir el esfuerzo manual y mejorar los resultados de contratación.",
-                "benefit-4-title": "Toque Humano Experto",
-                "benefit-4-text": "Nuestras herramientas de IA complementan, no reemplazan, a nuestros reclutadores experimentados que brindan orientación estratégica y soporte personalizado.",
-                "benefit-5-title": "Soluciones Escalables",
-                "benefit-5-text": "Ya sea que estés contratando a un especialista o construyendo un equipo completo, nuestras soluciones se adaptan a tus necesidades cambiantes.",
-                "benefit-6-title": "Reclutamiento a Prueba de Futuro",
-                "benefit-6-text": "Mantente a la vanguardia en el competitivo mercado de TI adoptando las estrategias de reclutamiento más innovadoras impulsadas por IA.",
-                "ai-edge-heading": "Nuestra Ventaja de IA: Impulsando la Innovación en Reclutamiento",
-                "ai-edge-subheading": "En Rekru.AI, evaluamos e integramos continuamente las tecnologías de IA más sofisticadas para mejorar cada etapa del ciclo de vida del reclutamiento. Nuestras herramientas propias y de terceros garantizan eficiencia, precisión y resultados superiores.",
-                "ai-tool-1-title": "Procesamiento de Lenguaje Natural (PLN)",
-                "ai-tool-1-text": "Para el análisis avanzado de currículums, análisis de sentimientos de las comunicaciones de los candidatos y comprensión de descripciones de trabajo complejas para encontrar las coincidencias semánticas perfectas.",
-                "ai-tool-2-title": "Algoritmos de Aprendizaje Automático (ML)",
-                "ai-tool-2-text": "Impulsando el análisis predictivo para el éxito de los candidatos, la previsión de tendencias del mercado de talentos y la optimización del rendimiento de los anuncios de empleo basados en datos históricos.",
-                "ai-tool-3-title": "Plataformas de Automatización Inteligente",
-                "ai-tool-3-text": "Automatización de tareas rutinarias como la programación de entrevistas, el envío de seguimientos personalizados y la gestión de la cartera de candidatos, liberando a los reclutadores para el trabajo estratégico.",
-                "ai-tool-4-title": "Análisis y Paneles de Control Impulsados por IA",
-                "ai-tool-4-text": "Proporcionando información en tiempo real sobre su cartera de reclutamiento, métricas de rendimiento y tendencias del mercado para la toma de decisiones estratégicas.",
-                "jd-enhancer-heading": "✨ Mejora tus Descripciones de Puesto con IA",
-                "jd-enhancer-subheading": "Proporciona una descripción de puesto básica, y nuestra IA la transformará en una lista completa, atractiva y optimizada para atraer a los mejores talentos.",
-                "jd-input-label": "Introduce tu Descripción de Puesto básica aquí:",
-                "features-building-heading": "Características que Estamos Construyendo: La Ventaja de Rekru.AI",
-                "feature-1-title": "Análisis de Currículums con IA",
-                "feature-1-text": "Nuestra característica principal para profundizar en los currículums, extraer información clave y emparejarla con los requisitos del puesto con alta precisión.",
-                "feature-2-title": "Cribado por Lotes de Candidatos",
-                "feature-2-text": "Procesa eficientemente cientos de currículums simultáneamente, clasificando candidatos y proporcionando informes resumidos para una toma de decisiones rápida.",
-                "feature-3-title": "Generación Automatizada de Descripciones de Puesto",
-                "feature-3-text": "Genera descripciones de puesto completas y atractivas adaptadas a tus necesidades, ahorrando tiempo y asegurando la coherencia.",
-                "feature-4-title": "Alcance Inteligente de Candidatos",
-                "feature-4-text": "Crea mensajes de alcance personalizados y atractivos utilizando IA, aumentando las tasas de respuesta y mejorando la experiencia del candidato.",
-                "feature-5-title": "Publicación de Descripciones de Puesto Específicas de Plataforma",
-                "feature-5-text": "Adapta tus descripciones de puesto para una visibilidad y compromiso óptimos en varias bolsas de trabajo y plataformas de redes sociales.",
-                "feature-6-title": "Gestión Integrada de Contactos",
-                "feature-6-text": "Mantén un registro de todas tus interacciones con los candidatos, estados y notas dentro de un sistema centralizado y fácil de usar.",
+                "hero-heading": "Revoluciona tu Reclutamiento con <span class='text-yellow-300'>IA</span>",
+                "hero-subheading": "Rekru.AI optimiza tu proceso de contratación, desde el análisis inteligente de currículums hasta la generación automatizada de descripciones de puesto y la búsqueda de candidatos.",
+                "hero-cta": "Explorar Características",
+                "features-heading": "Nuestras Potentes Características de IA",
+                "feature1-title": "Analizador de Currículums con IA",
+                "feature1-description": "Analiza instantáneamente currículums según los requisitos del puesto, obtén porcentajes de coincidencia y una perspectiva de reclutador.",
+                "feature2-title": "Analizador Avanzado (Lotes)",
+                "feature2-description": "Procesa múltiples currículums a la vez, compara candidatos y obtén información resumida para contrataciones masivas.",
+                "feature3-title": "Generador de Descripciones de Puesto",
+                "feature3-description": "Genera descripciones de puesto completas y atractivas adaptadas a tus necesidades en segundos.",
+                "feature4-title": "Buscador/Gestor de Contactos con IA",
+                "feature4-description": "Busca candidatos de forma inteligente y gestiona tus contactos con información impulsada por IA.",
+                "feature5-title": "Publicar Descripciones de Puesto en mis Plataformas",
+                "feature5-description": "Publica sin problemas tus descripciones de puesto generadas en varias plataformas con facilidad.",
+                "feature6-title": "Mejorador de Descripciones de Puesto",
+                "feature6-description": "Refina y optimiza tus descripciones de puesto existentes para una mejor atracción de candidatos y SEO.",
+                "feature-learn-more": "Saber Más",
+                "cta-heading": "¿Listo para Transformar tu Contratación?",
+                "cta-subheading": "Únete a Rekru.AI hoy y experimenta el futuro del reclutamiento inteligente.",
+                "cta-signup": "Regístrate Gratis",
                 "contact-heading": "Ponte en Contacto",
-                "contact-subheading": "¿Listo para transformar tu reclutamiento de TI? Contáctanos hoy para saber cómo Rekru.AI puede ayudarte a encontrar el mejor talento.",
+                "contact-subheading": "¿Tienes preguntas o necesitas una solución personalizada? Ponte en contacto con nuestro equipo.",
                 "contact-name-label": "Nombre",
+                "contact-name-placeholder": "Tu Nombre",
                 "contact-email-label": "Correo Electrónico",
+                "contact-email-placeholder": "tu@ejemplo.com",
                 "contact-message-label": "Mensaje",
-                "contact-submit-button": "Enviar Mensaje",
+                "contact-message-placeholder": "Tu mensaje...",
+                "contact-send-button": "Enviar Mensaje",
                 "footer-copyright": "&copy; 2025 Rekru.AI. Todos los derechos reservados.",
                 "footer-privacy": "Política de Privacidad",
                 "footer-terms": "Términos de Servicio",
@@ -981,8 +759,6 @@
             },
             pt: {
                 "logo-text": "Rekru.AI",
-                "nav-about": "Sobre Nós",
-                "nav-features-building": "Recursos em Construção",
                 "nav-features": "Recursos",
                 "feature-resume-analyzer": "Analisador de Currículos",
                 "feature-advanced-analyzer": "Analisador Avançado",
@@ -995,94 +771,64 @@
                 "nav-signup": "Cadastrar-se",
                 "nav-settings": "Configurações",
                 "settings-dark-mode": "Modo Claro/Escuro",
-                "hero-heading": "Revolucionando a Aquisição de Talentos de TI com IA",
-                "hero-subheading": "Aproveitando a Inteligência Artificial de ponta para conectar você com os melhores profissionais de TI, de forma mais rápida e inteligente.",
-                "hero-button": "Descubra seu Próximo Contratado",
-                "user-data-heading": "Seu Painel Personalizado",
-                "user-data-welcome": "Bem-vindo(a), <span id=\"loggedInUserEmail\" class=\"font-semibold\"></span>!",
-                "user-preferences-title": "Suas Preferências",
-                "favorite-tech-stack-label": "Pilha de Tecnologia Favorita:",
-                "save-preferences-button": "Salvar Preferências",
-                "about-heading": "Sobre a Rekru.AI",
-                "about-text-1": "<p class=\"mb-4\">A Rekru.AI está na vanguarda do recrutamento de TI, especializada na integração de ferramentas avançadas de IA para redefinir como as empresas encontram e garantem talentos de tecnologia de ponta.</p><p>Nossa missão é otimizar seu processo de contratação, reduzir custos e garantir uma correspondência perfeita entre candidatos e cultura da empresa, tudo impulsionado por automação inteligente e insights baseados em dados. Nosso objetivo é capacitar as empresas para construir equipes de TI de alto desempenho com eficiência e precisão sem precedentes.</p>",
-                "about-text-2": "Nossa missão é otimizar seu processo de contratação, reduzir custos e garantir uma correspondência perfeita entre candidatos e cultura da empresa, tudo impulsionado por automação inteligente e insights baseados em dados. Nosso objetivo é capacitar as empresas para construir equipes de TI de alto desempenho com eficiência e precisão sem precedentes.",
-                "why-choose-heading": "Por que a Rekru.AI é sua Melhor Escolha",
-                "benefit-1-title": "Precisão Inigualável",
-                "benefit-1-text": "Nossos algoritmos impulsionados por IA identificam candidatos com as habilidades exatas e o ajuste cultural que sua empresa precisa, reduzindo contratações equivocadas.",
-                "benefit-2-title": "Prazos Acelerados",
-                "benefit-2-text": "Reduza significativamente seu tempo de contratação com processos automatizados e gerenciamento inteligente do pipeline de candidatos.",
-                "benefit-3-title": "Eficiência de Custo",
-                "benefit-3-text": "Otimize seu orçamento de recrutamento aproveitando a IA para reduzir o esforço manual e melhorar os resultados de contratação.",
-                "benefit-4-title": "Toque Humano Especializado",
-                "benefit-4-text": "Nossas ferramentas de IA aumentam, não substituem, nossos recrutadores experientes que fornecem orientação estratégica e suporte personalizado.",
-                "benefit-5-title": "Soluções Escaláveis",
-                "benefit-5-text": "Seja você contratando um especialista ou construindo uma equipe inteira, nossas soluções se adaptam às suas necessidades em evolução.",
-                "benefit-6-title": "Recrutamento à Prova de Futuro",
-                "benefit-6-text": "Mantenha-se à frente no competitivo mercado de TI, adotando as estratégias de recrutamento mais inovadoras impulsionadas por IA.",
-                "ai-edge-heading": "Nossa Vantagem de IA: Impulsando a Inovação no Reclutamento",
-                "ai-edge-subheading": "Na Rekru.AI, avaliamos e integramos continuamente as tecnologias de IA mais sofisticadas para aprimorar cada etapa do ciclo de vida do recrutamento. Nossas ferramentas próprias e de terceiros garantem eficiência, precisão e resultados superiores.",
-                "ai-tool-1-title": "Procesamento de Lenguaje Natural (PLN)",
-                "ai-tool-1-text": "Para análise avançada de currículums, análisis de sentimientos de las comunicaciones de los candidatos y comprensión de descripciones de trabajo complejas para encontrar las coincidencias semánticas perfectas.",
-                "ai-tool-2-title": "Algoritmos de Aprendizado de Máquina (ML)",
-                "ai-tool-2-text": "Impulsionando el análisis predictivo para el éxito del candidato, la previsão de tendencias del mercado de talentos e a otimização do desempenho de anúncios de emprego baseados em dados históricos.",
-                "ai-tool-3-title": "Plataformas de Automatização Inteligente",
-                "ai-tool-3-text": "Automatizando tarefas rotineiras como agendamento de entrevistas, envio de acompanhamentos personalizados e gerenciamento de pipelines de candidatos, liberando a los reclutadores para trabajo estratégico.",
-                "ai-tool-4-title": "Análise e Painéis Impulsionados por IA",
-                "ai-tool-4-text": "Fornecendo insights em tempo real sobre seu pipeline de recrutamento, métricas de desempenho e tendências de mercado para tomada de decisões estratégicas.",
-                "jd-enhancer-heading": "✨ Otimize suas Descrições de Cargo com IA",
-                "jd-enhancer-subheading": "Forneça uma descrição de cargo básica, e nossa IA a transformará em una lista completa, atraente e otimizada para atrair os melhores talentos.",
-                "jd-input-label": "Insira sua Descrição de Cargo básica aqui:",
-                "features-building-heading": "Recursos que Estamos Construindo: A Vantagem Rekru.AI",
-                "feature-1-title": "Análise de Currículos com IA",
-                "feature-1-text": "Nosso recurso principal para mergulhar profundamente em currículos, extrair informações-chave y emparejarla con los requisitos del trabajo con alta precisão.",
-                "feature-2-title": "Triagem em Lote de Candidatos",
-                "feature-2-text": "Processe eficientemente centenas de currículos simultaneamente, classificando candidatos e fornecendo relatórios resumidos para tomada de decisão rápida.",
-                "feature-3-title": "Geração Automatizada de Descrição de Cargo",
-                "feature-3-text": "Gere descrições de cargo abrangentes e atraentes, adaptadas às suas necessidades, economizando tempo e garantindo consistencia.",
-                "feature-4-title": "Alcance Inteligente de Candidatos",
-                "feature-4-text": "Crie mensagens de alcance personalizadas e envolventes usando IA, aumentando as taxas de resposta e melhorando a experiência do candidato.",
-                "feature-5-title": "Publicação de Descrição de Cargo Específica da Plataforma",
-                "feature-5-text": "Adapte suas descrições de cargo para visibilidade e engajamento ideais em vários quadros de empregos e plataformas de mídia social.",
-                "feature-6-title": "Gerenciamento Integrado de Contatos",
-                "feature-6-text": "Mantenha um registro de todas as suas interações com candidatos, status e notas dentro de um sistema centralizado e fácil de usar.",
+                "hero-heading": "Revolucione seu Recrutamento com <span class='text-yellow-300'>IA</span>",
+                "hero-subheading": "Rekru.AI otimiza seu processo de contratação, desde a análise inteligente de currículos até a geração automatizada de descrições de cargo e a busca de candidatos.",
+                "hero-cta": "Explorar Recursos",
+                "features-heading": "Nossos Poderosos Recursos de IA",
+                "feature1-title": "Analisador de Currículos com IA",
+                "feature1-description": "Analise instantaneamente currículos em relação aos requisitos do cargo, obtenha porcentagens de correspondência e uma perspectiva de recrutador.",
+                "feature2-title": "Analisador Avançado (Lote)",
+                "feature2-description": "Processe múltiplos currículos de uma vez, compare candidatos e obtenha insights resumidos para contratações em massa.",
+                "feature3-title": "Gerador de Descrição de Cargo",
+                "feature3-description": "Gere descrições de cargo abrangentes e envolventes, adaptadas às suas necessidades em segundos.",
+                "feature4-title": "AI Sourcer/Gerenciador de Contatos",
+                "feature4-description": "Busque candidatos de forma inteligente e gerencie seus contatos com insights impulsionados por IA.",
+                "feature5-title": "Publicar Descrição de Cargo nas Minhas Plataformas",
+                "feature5-description": "Publique facilmente suas descrições de cargo geradas em várias plataformas.",
+                "feature6-title": "Otimizador de Descrição de Cargo",
+                "feature6-description": "Refine e otimize suas descrições de cargo existentes para melhor atração de candidatos e SEO.",
+                "feature-learn-more": "Saiba Mais",
+                "cta-heading": "Pronto para Transformar sua Contratação?",
+                "cta-subheading": "Junte-se ao Rekru.AI hoje e experimente o futuro do recrutamento inteligente.",
+                "cta-signup": "Cadastre-se Gratuitamente",
                 "contact-heading": "Entre em Contato",
-                "contact-subheading": "Pronto para transformar seu recrutamento de TI? Entre em contato hoje para saber como a Rekru.AI pode ajudá-lo a encontrar os melhores talentos.",
+                "contact-subheading": "Tem perguntas ou precisa de uma solução personalizada? Entre em contato com nossa equipe.",
                 "contact-name-label": "Nome",
+                "contact-name-placeholder": "Seu Nome",
                 "contact-email-label": "Email",
+                "contact-email-placeholder": "seu@exemplo.com",
                 "contact-message-label": "Mensagem",
-                "contact-submit-button": "Enviar Mensagem",
+                "contact-message-placeholder": "Sua mensagem...",
+                "contact-send-button": "Enviar Mensagem",
                 "footer-copyright": "&copy; 2025 Rekru.AI. Todos os direitos reservados.",
                 "footer-privacy": "Política de Privacidade",
                 "footer-terms": "Termos de Serviço",
-                "footer-sitemap": "Mapa del Sitio"
+                "footer-sitemap": "Mapa do Site"
             }
         };
 
-        function changeLanguage(lang) {
+        // Function to change language (already present in other files, kept for consistency)
+        window.changeLanguage = (lang) => {
             const elements = document.querySelectorAll('[data-translate-key]');
             elements.forEach(element => {
                 const key = element.getAttribute('data-translate-key');
                 if (translations[lang] && translations[lang][key]) {
-                    // For elements with inner HTML content (like paragraphs in about section)
-                    if (key.includes('about-text')) {
-                        element.innerHTML = translations[lang][key];
+                    if (element.tagName === 'INPUT' || element.tagName === 'TEXTAREA') {
+                        element.placeholder = translations[lang][key];
                     } else {
-                        element.textContent = translations[lang][key];
+                        element.innerHTML = translations[lang][key]; // Use innerHTML for text that might contain HTML (like the hero heading span)
                     }
                 }
             });
-            // Update the language attribute on the html tag for accessibility
             document.documentElement.lang = lang;
-            // Store the selected language in local storage
             localStorage.setItem('selectedLanguage', lang);
         }
 
-        // Load preferred language on page load
+        // Apply language on page load
         document.addEventListener('DOMContentLoaded', () => {
-            const savedLanguage = localStorage.getItem('selectedLanguage') || 'en'; // Default to English
-            changeLanguage(savedLanguage);
+            const savedLanguage = localStorage.getItem('selectedLanguage') || 'en';
+            window.changeLanguage(savedLanguage);
         });
-
     </script>
 </body>
 </html>
