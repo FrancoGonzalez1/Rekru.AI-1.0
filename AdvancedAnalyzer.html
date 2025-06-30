@@ -456,9 +456,9 @@
                         <svg class="ml-2 w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7"></path></svg>
                     </button>
                     <div class="dropdown-content-sub absolute left-full top-0 mt-0 w-32 rounded-md shadow-lg bg-white ring-1 ring-black ring-opacity-5 focus:outline-none">
-                        <a href="#" onclick="changeLanguage('en'); closeMobileMenu();" class="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-100 dropdown-item">English</a>
-                        <a href="#" onclick="changeLanguage('es'); closeMobileMenu();" class="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-100 dropdown-item">Español</a>
-                        <a href="#" onclick="changeLanguage('pt'); closeMobileMenu();" class="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-100 dropdown-item">Português</a>
+                        <a href="#" onclick="changeLanguage('en')" class="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-100 dropdown-item">English</a>
+                        <a href="#" onclick="changeLanguage('es')" class="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-100 dropdown-item">Español</a>
+                        <a href="#" onclick="changeLanguage('pt')" class="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-100 dropdown-item">Português</a>
                     </div>
                 </div>
             </div>
@@ -613,7 +613,9 @@
 
         // Global Firebase variables (Canvas provides these)
         const appId = typeof __app_id !== 'undefined' ? __app_id : 'default-app-id';
-        const firebaseConfig = typeof __firebase_config !== 'undefined' ? JSON.parse(__firebase_config) : {};
+        // MANDATORY: Use __firebase_config provided by the Canvas environment
+        const firebaseConfig = JSON.parse(typeof __firebase_config !== 'undefined' ? __firebase_config : '{}');
+
 
         let app, db, auth, userId;
         let uploadedFiles = []; // To store files for batch processing
@@ -633,24 +635,56 @@
                         window.loadSavedJobDescriptionsAdvanced();
                         window.loadRequiredSkillsAdvanced();
                     } else {
+                        // Check if __initial_auth_token is provided by the environment
                         if (typeof __initial_auth_token !== 'undefined' && __initial_auth_token.length > 0) {
                             try {
                                 await signInWithCustomToken(auth, __initial_auth_token);
+                                userId = auth.currentUser?.uid; // Ensure userId is set after successful sign-in
+                                console.log("Signed in with custom token. User ID:", userId);
                             } catch (tokenError) {
-                                console.warn("Error with custom token, falling back to anonymous:", tokenError);
+                                console.error("Error signing in with custom token:", tokenError);
+                                // If custom token fails, try anonymous sign-in as a fallback
+                                try {
+                                    const anonymousUser = await signInAnonymously(auth);
+                                    userId = anonymousUser.user.uid;
+                                    console.log("Signed in anonymously (fallback). User ID:", userId);
+                                    window.displayMessageBox("Signed in anonymously. To save data, ensure Anonymous authentication is enabled in Firebase.", 'info');
+                                } catch (anonError) {
+                                    console.error("Failed to sign in anonymously (fallback):", anonError);
+                                    if (anonError.code === 'auth/requests-to-this-api-identitytoolkit-method-google.cloud.identitytoolkit.v1.authenticationservice.signup-are-blocked.') {
+                                        window.displayMessageBox("Authentication failed. Please enable the 'Identity Toolkit API' in your Google Cloud Project and 'Anonymous' sign-in method in Firebase Authentication settings.", 'error');
+                                    } else if (anonError.code === 'auth/configuration-not-found') {
+                                        window.displayMessageBox("Firebase configuration not found. Please ensure your Firebase project is correctly set up and the __firebase_config variable is provided by the environment.", 'error');
+                                    }
+                                    else {
+                                        window.displayMessageBox(`Authentication failed: ${anonError.message}. Please check your Firebase project settings.`, 'error');
+                                    }
+                                }
+                            }
+                        } else {
+                            console.warn("No __initial_auth_token provided. Attempting anonymous sign-in.");
+                            try {
                                 const anonymousUser = await signInAnonymously(auth);
                                 userId = anonymousUser.user.uid;
                                 console.log("Signed in anonymously. User ID:", userId);
+                                window.displayMessageBox("Signed in anonymously. To save data, ensure Anonymous authentication is enabled in Firebase.", 'info');
+                            } catch (anonError) {
+                                console.error("Failed to sign in anonymously:", anonError);
+                                if (anonError.code === 'auth/requests-to-this-api-identitytoolkit-method-google.cloud.identitytoolkit.v1.authenticationservice.signup-are-blocked.') {
+                                    window.displayMessageBox("Authentication failed. Please enable the 'Identity Toolkit API' in your Google Cloud Project and 'Anonymous' sign-in method in Firebase Authentication settings.", 'error');
+                                } else if (anonError.code === 'auth/configuration-not-found') {
+                                    window.displayMessageBox("Firebase configuration not found. Please ensure your Firebase project is correctly set up and the __firebase_config variable is provided by the environment.", 'error');
+                                }
+                                else {
+                                    window.displayMessageBox(`Authentication failed: ${anonError.message}. Please check your Firebase project settings.`, 'error');
+                                }
                             }
-                        } else {
-                            const anonymousUser = await signInAnonymously(auth);
-                            userId = anonymousUser.user.uid;
-                            console.log("Signed in anonymously. User ID:", userId);
                         }
                     }
                 });
             } catch (error) {
                 console.error("Error initializing Firebase:", error);
+                window.displayMessageBox("Firebase initialization failed. Please check your Firebase configuration and network connection.", 'error');
             }
         }
 
@@ -767,7 +801,8 @@
                 await deleteDoc(docRef);
                 window.displayMessageBox(translations[document.documentElement.lang]["jd-deleted-success-advanced"] || 'Advanced Job description deleted successfully!', 'info');
                 window.loadSavedJobDescriptionsAdvanced(); // Refresh the list
-            } catch (error) {
+            }
+            catch (error) {
                 console.error("Error deleting advanced job description:", error);
                 window.displayMessageBox(`${translations[document.documentElement.lang]["error-deleting-jd-advanced"] || 'Error deleting advanced job description'}: ${error.message}`, 'error');
             }
