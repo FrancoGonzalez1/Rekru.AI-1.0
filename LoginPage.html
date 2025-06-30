@@ -4,26 +4,29 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Rekru.AI - Login</title>
+    <!-- Tailwind CSS CDN for easy styling -->
     <script src="https://cdn.tailwindcss.com"></script>
     <link href="https://fonts.googleapis.com/css2?family=Orbitron:wght@400;700&display=swap" rel="stylesheet">
     <style>
-        /* Common styles copied from rekru-ai-landing-page.html */
+        /* Custom font for a modern look */
         body {
             font-family: 'Inter', sans-serif;
         }
+        /* Smooth scrolling for anchor links */
         html {
             scroll-behavior: smooth;
         }
+        /* Custom font for the logo */
         .font-orbitron {
             font-family: 'Orbitron', sans-serif;
         }
         /* Dark Mode Styles */
         html.dark {
-            background-color: #0c0a09; /* zinc-950 - very dark grey/black */
+            background-color: #1f2937; /* Matches login/signup dark background */
             color: #f8fafc; /* slate-50 - almost white text for better readability */
         }
         html.dark body {
-            background-color: #0c0a09;
+            background-color: #1f2937; /* Matches login/signup dark background */
             color: #f8fafc; /* slate-50 */
         }
         html.dark header {
@@ -40,13 +43,6 @@
         html.dark section {
             background-color: #1a202c; /* darker section background */
             box-shadow: 0 4px 10px -2px rgba(0, 0, 0, 0.6), 0 4px 8px -2px rgba(0, 0, 0, 0.3); /* Stronger shadow */
-        }
-        /* Updated background for login/signup pages for better contrast */
-        body.bg-gray-100 { /* Specific to login/signup body */
-            background-color: #f3f4f6; /* bg-gray-100 */
-        }
-        html.dark body.bg-gray-100 { /* Darker background for dark mode login/signup */
-            background-color: #1f2937; /* A darker shade of gray for dark mode body */
         }
         html.dark .bg-gray-100 { /* Used for internal sections/cards */
             background-color: #2d3748; /* darker gray-100 */
@@ -69,10 +65,10 @@
         html.dark .text-gray-500 {
             color: #a0aec0; /* medium gray */
         }
-        html.dark .text-indigo-700 {
+        html.dark .text-indigo-700 { /* Rekru.AI logo, saved JD links */
             color: #a78bfa; /* violet-400, more vibrant */
         }
-        html.dark .text-indigo-800 {
+        html.dark .text-indigo-800 { /* Section headings */
             color: #c4b5fd; /* violet-300, more vibrant */
         }
         html.dark footer {
@@ -91,67 +87,67 @@
         .dropdown-content {
             display: none;
             position: absolute;
-            background-color: #2d3748; /* Darker background for dropdown */
+            background-color: #f9f9f9;
             min-width: 160px;
-            box-shadow: 0px 8px 16px 0px rgba(0,0,0,0.4);
+            box-shadow: 0px 8px 16px 0px rgba(0,0,0,0.2);
             z-index: 1;
             border-radius: 0.5rem;
             overflow: hidden;
-            /* Adjusted for right alignment */
-            right: 0;
+            right: 0; /* Align to the right */
             left: auto;
             transform: none;
         }
-        .dropdown-content a {
-            color: #e2e8f0; /* Light text for dark mode dropdown */
+        .dropdown-content a, .dropdown-content button {
+            color: black;
             padding: 12px 16px;
             text-decoration: none;
             display: block;
             text-align: left;
         }
-        .dropdown-content a:hover {
-            background-color: #4a5568; /* Darker hover for dropdown */
-        }
-        /* Custom Gradient Borders for information boxes - Removed for login/signup forms */
-        /* .gradient-border-b {
-            border-bottom: 4px solid transparent;
-            border-image: linear-gradient(to right, #ef4444, #f97316, #eab308) 1;
-        }
-        .gradient-border-l {
-            border-left: 4px solid transparent;
-            border-image: linear-gradient(to bottom, #ef4444, #f97316, #eab308) 1;
-        } */
-
-        /* Centering navigation items for larger screens */
-        .header-nav-list {
-            display: flex;
-            justify-content: center;
-            flex-wrap: wrap;
-            flex-grow: 1; /* Allow it to take available space for centering */
+        .dropdown-content a:hover, .dropdown-content button:hover {
+            background-color: #f1f1f1;
         }
 
-        /* Animations for scroll */
-        .animate-on-scroll {
-            opacity: 0;
-            transform: translateY(20px);
-            transition: opacity 0.6s ease-out, transform 0.6s ease-out;
+        html.dark .dropdown-content {
+            background-color: #2d3748; /* darker */
+            box-shadow: 0px 8px 16px 0px rgba(0,0,0,0.4);
+        }
+        html.dark .dropdown-content a, html.dark .dropdown-content button {
+            color: #e2e8f0; /* light text */
+        }
+        html.dark .dropdown-content a:hover, html.dark .dropdown-content button:hover {
+            background-color: #4a5568; /* darker hover */
         }
 
-        .animate-on-scroll.is-visible {
-            opacity: 1;
-            transform: translateY(0);
+        /* Sub-dropdown styles */
+        .dropdown-content-sub {
+            display: none;
+            position: absolute;
+            background-color: #f9f9f9;
+            min-width: 120px;
+            box-shadow: 0px 8px 16px 0px rgba(0,0,0,0.2);
+            z-index: 2; /* Higher z-index for sub-dropdown */
+            border-radius: 0.5rem;
+            overflow: hidden;
         }
-
-        /* Specific animation for cards */
-        .animate-card {
-            opacity: 0;
-            transform: scale(0.9);
-            transition: opacity 0.6s ease-out, transform 0.6s ease-out;
+        .dropdown-content-sub a {
+            color: black;
+            padding: 12px 16px;
+            text-decoration: none;
+            display: block;
+            text-align: left;
         }
-
-        .animate-card.is-visible {
-            opacity: 1;
-            transform: scale(1);
+        .dropdown-content-sub a:hover {
+            background-color: #f1f1f1;
+        }
+        html.dark .dropdown-content-sub {
+            background-color: #2d3748;
+        }
+        html.dark .dropdown-content-sub a {
+            color: #e2e8f0;
+        }
+        html.dark .dropdown-content-sub a:hover {
+            background-color: #4a5568;
         }
 
         /* Mobile menu specific styles */
@@ -176,7 +172,7 @@
             transform: translateX(0);
         }
 
-        .mobile-menu a {
+        .mobile-menu a, .mobile-menu button {
             color: #e2e8f0; /* Light text for mobile menu links */
             padding: 0.75rem 0;
             display: block;
@@ -198,64 +194,97 @@
             margin-top: 0.5rem;
             border-radius: 0.25rem;
         }
-        .mobile-menu .dropdown-content a {
+        .mobile-menu .dropdown-content a, .mobile-menu .dropdown-content button {
             padding-left: 1.5rem; /* Indent nested items */
+        }
+        .mobile-menu .dropdown-content-sub {
+            position: static; /* Override absolute positioning for mobile sub-dropdown */
+            transform: none;
+            width: 100%;
+            box-shadow: none;
+            background-color: #2d3748;
+            margin-top: 0.5rem;
+            border-radius: 0.25rem;
+        }
+        .mobile-menu .dropdown-content-sub a {
+            padding-left: 2.5rem; /* Further indent for sub-sub items */
         }
     </style>
 </head>
-<body class="bg-gray-100 text-gray-800"> <!-- Changed body background class -->
+<body class="bg-gray-50 text-gray-800">
 
+    <!-- Header Section -->
     <header class="bg-white shadow-md p-4 sticky top-0 z-50 rounded-b-lg">
         <div class="container mx-auto flex justify-between items-center flex-wrap">
-            <a href="../index.html" class="text-3xl font-bold text-indigo-700 hover:text-indigo-900 transition duration-300 ease-in-out font-orbitron mr-auto" data-translate-key="logo-text">
+            <!-- Agency Logo/Name -->
+            <a href="/index.html" class="text-3xl font-bold text-indigo-700 hover:text-indigo-900 transition duration-300 ease-in-out font-orbitron mr-auto" data-translate-key="logo-text">
                 Rekru.AI
             </a>
+            <!-- Navigation Menu -->
             <nav class="mt-4 md:mt-0 flex items-center flex-grow justify-end hidden md:flex">
                 <ul class="flex space-x-6 items-center">
+                    <!-- Features (now on the left) -->
                     <li class="relative dropdown">
                         <button class="text-gray-600 hover:text-indigo-700 font-medium transition duration-300 ease-in-out rounded-md px-3 py-2 flex items-center dropdown-toggle" data-translate-key="nav-features">
                             Features
                             <svg class="ml-2 w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"></path></svg>
                         </button>
                         <div class="dropdown-content absolute mt-2 w-48 rounded-md shadow-lg bg-white ring-1 ring-black ring-opacity-5 focus:outline-none">
-                            <a href="../resume-analyzer.html" target="_blank" class="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-100 dropdown-item" data-translate-key="feature-resume-analyzer">Resume Analyzer</a>
-                            <a href="../advanced-analyzer.html" target="_blank" class="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-100 dropdown-item" data-translate-key="feature-advanced-analyzer">Advanced Analyzer</a>
-                            <a href="../jd-generator.html" target="_blank" class="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-100 dropdown-item" data-translate-key="feature-jd-generator">Job Description Generator</a>
-                            <a href="../ai-sourcer.html" target="_blank" class="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-100 dropdown-item" data-translate-key="feature-ai-sourcer">AI Sourcer/Contact Manager</a>
-                            <a href="../jd-poster.html" target="_blank" class="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-100 dropdown-item" data-translate-key="feature-jd-poster">Posting JD in my Platforms</a>
-                            <a href="../index.html#jd-enhancer" class="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-100 dropdown-item" data-translate-key="feature-jd-enhancer">✨ JD Enhancer</a>
+                            <a href="/resume-analyzer.html" class="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-100 dropdown-item" data-translate-key="feature-resume-analyzer">Resume Analyzer</a>
+                            <a href="/advanced-analyzer.html" class="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-100 dropdown-item" data-translate-key="feature-advanced-analyzer">Advanced Analyzer</a>
+                            <a href="/jd-generator.html" class="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-100 dropdown-item" data-translate-key="feature-jd-generator">Job Description Generator</a>
+                            <a href="/ai-sourcer.html" class="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-100 dropdown-item" data-translate-key="feature-ai-sourcer">AI Sourcer/Contact Manager</a>
+                            <a href="/jd-poster.html" class="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-100 dropdown-item" data-translate-key="feature-jd-poster">Posting JD in my Platforms</a>
+                            <a href="/pages/jd-enhancer.html" class="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-100 dropdown-item" data-translate-key="feature-jd-enhancer">✨ JD Enhancer</a>
                         </div>
                     </li>
+                    <!-- Spacer to push login/signup/settings to the right -->
+                    <li class="flex-grow"></li>
+                    <!-- Login -->
                     <li>
-                        <a href="login.html" class="text-gray-600 hover:text-indigo-700 font-medium transition duration-300 ease-in-out rounded-md px-3 py-2" data-translate-key="nav-login">Login</a>
+                        <a href="/pages/login.html" class="text-gray-600 hover:text-indigo-700 font-medium transition duration-300 ease-in-out rounded-md px-3 py-2" data-translate-key="nav-login">Login</a>
                     </li>
+                    <!-- Sign Up -->
                     <li>
-                        <a href="signup.html" class="text-gray-600 hover:text-indigo-700 font-medium transition duration-300 ease-in-out rounded-md px-3 py-2" data-translate-key="nav-signup">Sign Up</a>
+                        <a href="/pages/signup.html" class="text-gray-600 hover:text-indigo-700 font-medium transition duration-300 ease-in-out rounded-md px-3 py-2" data-translate-key="nav-signup">Sign Up</a>
                     </li>
-                    <li>
-                        <button id="darkModeToggle" class="p-2 rounded-full bg-gray-200 dark:bg-gray-700 text-gray-800 dark:text-gray-200 hover:bg-gray-300 dark:hover:bg-gray-600 transition duration-300">
-                            <svg id="sunIcon" class="h-6 w-6" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
-                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 3v1m0 16v1m9-9h1M3 12H2m15.325-7.757l-.707-.707M6.343 17.657l-.707.707M16.95 7.05l.707-.707M7.05 16.95l-.707.707M12 7a5 5 0 100 10 5 5 0 000-10z"></path>
-                            </svg>
-                            <svg id="moonIcon" class="h-6 w-6 hidden" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
-                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M20.354 15.354A9 9 0 018.646 3.646 9.003 9.003 0 0012 21a9.003 9.003 0 008.354-5.646z"></path>
-                            </svg>
-                        </button>
-                    </li>
+                    <!-- Settings Button (Gear Icon) -->
                     <li class="relative dropdown">
-                        <button class="text-gray-600 hover:text-indigo-700 font-medium transition duration-300 ease-in-out rounded-md px-3 py-2 flex items-center dropdown-toggle" data-translate-key="nav-language">
-                            Language
-                            <svg class="ml-2 w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"></path></svg>
+                        <button class="p-2 rounded-full bg-gray-200 dark:bg-gray-700 text-gray-800 dark:text-gray-200 hover:bg-gray-300 dark:hover:bg-gray-600 transition duration-300 dropdown-toggle" id="settingsButton" data-translate-key="nav-settings">
+                            <svg class="h-6 w-6" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10.325 4.317c.426-1.756 2.924-1.756 3.35 0a1.724 1.724 0 002.573 1.066c1.543-.94 3.31.826 2.37 2.37a1.724 1.724 0 001.065 2.572c1.756.426 1.756 2.924 0 3.35a1.724 1.724 0 00-1.066 2.573c.94 1.543-.826 3.31-2.37 2.37a1.724 1.724 0 00-2.572 1.065c-.426 1.756-2.924 1.756-3.35 0a1.724 1.724 0 00-2.573-1.066c-1.543.94-3.31-.826-2.37-2.37a1.724 1.724 0 00-1.065-2.572c-1.756-.426-1.756-2.924 0-3.35a1.724 1.724 0 001.066-2.573c-.94-1.543.826-3.31 2.37-2.37a1.724 1.724 0 002.572-1.065z"></path>
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z"></path>
+                            </svg>
                         </button>
-                        <div class="dropdown-content absolute mt-2 w-32 rounded-md shadow-lg bg-white ring-1 ring-black ring-opacity-5 focus:outline-none">
-                            <a href="#" onclick="changeLanguage('en')" class="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-100 dropdown-item">English</a>
-                            <a href="#" onclick="changeLanguage('es')" class="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-100 dropdown-item">Español</a>
-                            <a href="#" onclick="changeLanguage('pt')" class="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-100 dropdown-item">Português</a>
+                        <div class="dropdown-content absolute mt-2 w-48 rounded-md shadow-lg bg-white ring-1 ring-black ring-opacity-5 focus:outline-none">
+                            <!-- Dark Mode Toggle inside settings dropdown -->
+                            <button id="darkModeToggle" class="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-100 w-full text-left flex items-center justify-between">
+                                <span data-translate-key="settings-dark-mode">Light/Dark Mode</span>
+                                <svg id="sunIcon" class="h-5 w-5" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 3v1m0 16v1m9-9h1M3 12H2m15.325-7.757l-.707-.707M6.343 17.657l-.707.707M16.95 7.05l.707-.707M7.05 16.95l-.707.707M12 7a5 5 0 100 10 5 5 0 000-10z"></path>
+                                </svg>
+                                <svg id="moonIcon" class="h-5 w-5 hidden" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M20.354 15.354A9 9 0 018.646 3.646 9.003 9.003 0 0012 21a9.003 9.003 0 008.354-5.646z"></path>
+                                </svg>
+                            </button>
+                            <!-- Language Settings inside settings dropdown -->
+                            <div class="relative dropdown-sub">
+                                <button class="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-100 w-full text-left flex items-center justify-between dropdown-toggle-sub" data-translate-key="nav-language">
+                                    Language
+                                    <svg class="ml-2 w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7"></path></svg>
+                                </button>
+                                <div class="dropdown-content-sub absolute left-full top-0 mt-0 w-32 rounded-md shadow-lg bg-white ring-1 ring-black ring-opacity-5 focus:outline-none">
+                                    <a href="#" onclick="changeLanguage('en')" class="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-100 dropdown-item">English</a>
+                                    <a href="#" onclick="changeLanguage('es')" class="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-100 dropdown-item">Español</a>
+                                    <a href="#" onclick="changeLanguage('pt')" class="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-100 dropdown-item">Português</a>
+                                </div>
+                            </div>
                         </div>
                     </li>
                 </ul>
             </nav>
 
+            <!-- Mobile Hamburger Button -->
             <button id="hamburgerButton" class="ml-4 p-2 rounded-full bg-gray-200 dark:bg-gray-700 text-gray-800 dark:text-gray-200 hover:bg-gray-300 dark:hover:bg-gray-600 transition duration-300 md:hidden">
                 <svg class="h-6 w-6" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
                     <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 6h16M4 12h16M4 18h16"></path>
@@ -264,81 +293,102 @@
         </div>
     </header>
 
+    <!-- Mobile Menu -->
     <div id="mobileMenu" class="mobile-menu">
         <button id="closeMobileMenu" class="self-end p-2 text-gray-400 hover:text-gray-200">
-            <svg class="h-6 w-6" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+            <svg class="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                 <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path>
             </svg>
         </button>
         
+        <!-- Features for mobile -->
         <div class="relative w-full">
             <button class="text-gray-400 hover:text-gray-200 font-medium transition duration-300 ease-in-out rounded-md py-2 flex items-center justify-between w-full mobile-dropdown-toggle" data-translate-key="nav-features">
                 Features
                 <svg class="ml-2 w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"></path></svg>
             </button>
             <div class="dropdown-content">
-                <a href="../resume-analyzer.html" target="_blank" class="dropdown-item" data-translate-key="feature-resume-analyzer">Resume Analyzer</a>
-                <a href="../advanced-analyzer.html" target="_blank" class="dropdown-item" data-translate-key="feature-advanced-analyzer">Advanced Analyzer</a>
-                <a href="../jd-generator.html" target="_blank" class="dropdown-item" data-translate-key="feature-jd-generator">Job Description Generator</a>
-                <a href="../ai-sourcer.html" target="_blank" class="dropdown-item" data-translate-key="feature-ai-sourcer">AI Sourcer/Contact Manager</a>
-                <a href="../jd-poster.html" target="_blank" class="dropdown-item" data-translate-key="feature-jd-poster">Posting JD in my Platforms</a>
-                <a href="../index.html#jd-enhancer" class="dropdown-item" data-translate-key="feature-jd-enhancer">✨ JD Enhancer</a>
+                <a href="/resume-analyzer.html" class="dropdown-item" data-translate-key="feature-resume-analyzer">Resume Analyzer</a>
+                <a href="/advanced-analyzer.html" class="dropdown-item" data-translate-key="feature-advanced-analyzer">Advanced Analyzer</a>
+                <a href="/jd-generator.html" class="dropdown-item" data-translate-key="feature-jd-generator">Job Description Generator</a>
+                <a href="/ai-sourcer.html" class="dropdown-item" data-translate-key="feature-ai-sourcer">AI Sourcer/Contact Manager</a>
+                <a href="/jd-poster.html" class="dropdown-item" data-translate-key="feature-jd-poster">Posting JD in my Platforms</a>
+                <a href="/pages/jd-enhancer.html" class="dropdown-item" data-translate-key="feature-jd-enhancer">✨ JD Enhancer</a>
             </div>
         </div>
 
-        <a href="login.html" class="text-gray-400 hover:text-gray-200 font-medium transition duration-300 ease-in-out rounded-md py-2 w-full text-left" data-translate-key="nav-login">Login</a>
-        <a href="signup.html" class="text-gray-400 hover:text-gray-200 font-medium transition duration-300 ease-in-out rounded-md py-2 w-full text-left" data-translate-key="nav-signup">Sign Up</a>
+        <!-- Login for mobile -->
+        <a href="/pages/login.html" class="text-gray-400 hover:text-gray-200 font-medium transition duration-300 ease-in-out rounded-md py-2 w-full text-left" data-translate-key="nav-login">Login</a>
+        <!-- Sign Up for mobile -->
+        <a href="/pages/signup.html" class="text-gray-400 hover:text-gray-200 font-medium transition duration-300 ease-in-out rounded-md py-2 w-full text-left" data-translate-key="nav-signup">Sign Up</a>
 
-        <!-- Dark Mode Toggle for mobile -->
+        <!-- Settings for mobile (gear icon will not be shown, just the options) -->
         <div class="relative w-full mt-4">
-            <button id="mobileDarkModeToggle" class="text-gray-400 hover:text-gray-200 font-medium transition duration-300 ease-in-out rounded-md py-2 flex items-center justify-between w-full">
-                Light/Dark Mode
-                <svg id="mobileSunIcon" class="h-6 w-6" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
-                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 3v1m0 16v1m9-9h1M3 12H2m15.325-7.757l-.707-.707M6.343 17.657l-.707.707M16.95 7.05l.707-.707M7.05 16.95l-.707.707M12 7a5 5 0 100 10 5 5 0 000-10z"></path>
-                </svg>
-                <svg id="mobileMoonIcon" class="h-6 w-6 hidden" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
-                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M20.354 15.354A9 9 0 018.646 3.646 9.003 9.003 0 0012 21a9.003 9.003 0 008.354-5.646z"></path>
-                </svg>
-            </button>
-        </div>
-
-        <div class="relative w-full mt-4">
-            <button class="text-gray-400 hover:text-gray-200 font-medium transition duration-300 ease-in-out rounded-md py-2 flex items-center justify-between w-full mobile-dropdown-toggle" data-translate-key="nav-language">
-                Language
+            <button class="text-gray-400 hover:text-gray-200 font-medium transition duration-300 ease-in-out rounded-md py-2 flex items-center justify-between w-full mobile-dropdown-toggle" data-translate-key="nav-settings">
+                Settings
                 <svg class="ml-2 w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"></path></svg>
             </button>
             <div class="dropdown-content">
-                <a href="#" onclick="changeLanguage('en'); closeMobileMenu();" class="dropdown-item">English</a>
-                <a href="#" onclick="changeLanguage('es'); closeMobileMenu();" class="dropdown-item">Español</a>
-                <a href="#" onclick="changeLanguage('pt'); closeMobileMenu();" class="dropdown-item">Português</a>
+                <!-- Dark Mode Toggle for mobile -->
+                <button id="mobileDarkModeToggle" class="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-100 w-full text-left flex items-center justify-between">
+                    <span data-translate-key="settings-dark-mode">Light/Dark Mode</span>
+                    <svg id="mobileSunIcon" class="h-5 w-5" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 3v1m0 16v1m9-9h1M3 12H2m15.325-7.757l-.707-.707M6.343 17.657l-.707.707M16.95 7.05l.707-.707M7.05 16.95l-.707.707M12 7a5 5 0 100 10 5 5 0 000-10z"></path>
+                    </svg>
+                    <svg id="mobileMoonIcon" class="h-5 w-5 hidden" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M20.354 15.354A9 9 0 018.646 3.646 9.003 9.003 0 0012 21a9.003 9.003 0 008.354-5.646z"></path>
+                    </svg>
+                </button>
+                <!-- Language for mobile -->
+                <div class="relative dropdown-sub">
+                    <button class="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-100 w-full text-left flex items-center justify-between dropdown-toggle-sub" data-translate-key="nav-language">
+                        Language
+                        <svg class="ml-2 w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7"></path></svg>
+                    </button>
+                    <div class="dropdown-content-sub absolute left-full top-0 mt-0 w-32 rounded-md shadow-lg bg-white ring-1 ring-black ring-opacity-5 focus:outline-none">
+                        <a href="#" onclick="changeLanguage('en')" class="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-100 dropdown-item">English</a>
+                        <a href="#" onclick="changeLanguage('es')" class="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-100 dropdown-item">Español</a>
+                        <a href="#" onclick="changeLanguage('pt')" class="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-100 dropdown-item">Português</a>
+                    </div>
+                </div>
             </div>
         </div>
     </div>
 
-    <section class="py-16 px-4 bg-gray-100 rounded-xl shadow-lg mx-auto max-w-md mt-12 animate-on-scroll">
-        <div class="container mx-auto text-center">
-            <h2 class="text-4xl font-bold text-indigo-800 mb-8" data-translate-key="login-heading">Login</h2>
-            <div class="bg-white p-8 rounded-lg shadow-md border-t-4 border-indigo-500"> <!-- Removed gradient-border classes -->
-                <form class="space-y-6">
-                    <div>
-                        <label for="email" class="block text-sm font-medium text-gray-700 text-left" data-translate-key="contact-email-label">Email</label>
-                        <input type="email" id="email" name="email" class="mt-1 block w-full p-3 border border-gray-300 rounded-md shadow-sm focus:ring-indigo-500 focus:border-indigo-500 dark:bg-gray-700 dark:border-gray-600 dark:text-white" placeholder="your@example.com" required>
-                    </div>
-                    <div>
-                        <label for="password" class="block text-sm font-medium text-gray-700 text-left" data-translate-key="login-password-label">Password</label>
-                        <input type="password" id="password" name="password" class="mt-1 block w-full p-3 border border-gray-300 rounded-md shadow-sm focus:ring-indigo-500 focus:border-indigo-500 dark:bg-gray-700 dark:border-gray-600 dark:text-white" placeholder="********" required>
-                    </div>
-                    <button type="submit" class="w-full bg-indigo-700 text-white py-3 px-6 rounded-md font-semibold hover:bg-indigo-800 transition duration-300 ease-in-out shadow-md transform hover:scale-105" data-translate-key="login-submit-button">
-                        Login
-                    </button>
-                </form>
-                <p class="mt-4 text-sm text-gray-600 dark:text-gray-400" data-translate-key="login-no-account">
-                    Don't have an account? <a href="signup.html" class="text-indigo-700 hover:underline" data-translate-key="login-signup-link">Sign Up</a>
-                </p>
-            </div>
+    <!-- Login Section -->
+    <section class="flex items-center justify-center min-h-[80vh] py-16 px-4 bg-gray-100 rounded-xl shadow-lg mx-auto max-w-md mt-12">
+        <div class="w-full bg-white p-8 rounded-lg shadow-md border-t-4 border-indigo-500 dark:bg-gray-700 dark:border-indigo-700">
+            <h2 class="text-3xl font-bold text-center text-indigo-800 mb-8 dark:text-indigo-300" data-translate-key="login-heading">Login to Rekru.AI</h2>
+            <form id="loginForm" class="space-y-6">
+                <div>
+                    <label for="email" class="block text-sm font-medium text-gray-700 text-left dark:text-gray-200" data-translate-key="login-email-label">Email</label>
+                    <input type="email" id="email" name="email" class="mt-1 block w-full p-3 border border-gray-300 rounded-md shadow-sm focus:ring-indigo-500 focus:border-indigo-500 dark:bg-gray-800 dark:border-gray-600 dark:text-white" placeholder="your@example.com" required>
+                </div>
+                <div>
+                    <label for="password" class="block text-sm font-medium text-gray-700 text-left dark:text-gray-200" data-translate-key="login-password-label">Password</label>
+                    <input type="password" id="password" name="password" class="mt-1 block w-full p-3 border border-gray-300 rounded-md shadow-sm focus:ring-indigo-500 focus:border-indigo-500 dark:bg-gray-800 dark:border-gray-600 dark:text-white" placeholder="********" required>
+                </div>
+                <button type="submit" class="w-full bg-indigo-700 text-white py-3 px-6 rounded-md font-semibold hover:bg-indigo-800 transition duration-300 ease-in-out shadow-md transform hover:scale-105" data-translate-key="login-button">
+                    Login
+                </button>
+            </form>
+            <p class="mt-6 text-center text-gray-600 dark:text-gray-300" data-translate-key="login-no-account">
+                Don't have an account? <a href="/pages/signup.html" class="text-indigo-700 hover:text-indigo-900 font-semibold dark:text-indigo-300" data-translate-key="login-signup-link">Sign Up</a>
+            </p>
         </div>
     </section>
 
+    <!-- Message Box (for custom alerts/confirmations) -->
+    <div id="messageBox" class="hidden fixed inset-0 bg-gray-600 bg-opacity-50 flex items-center justify-center z-50 p-4">
+        <div class="bg-white p-6 rounded-lg shadow-xl max-w-sm w-full text-center border-t-4 border-indigo-500 dark:bg-gray-800 dark:text-white dark:border-indigo-700">
+            <p id="messageBoxText" class="text-lg font-medium mb-4"></p>
+            <div class="flex justify-center space-x-4">
+                <button id="messageBoxClose" class="bg-indigo-600 text-white py-2 px-4 rounded-md hover:bg-indigo-700 transition duration-300">Close</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Footer Section -->
     <footer class="bg-white shadow-inner py-8 px-4 mt-12 rounded-t-lg">
         <div class="container mx-auto text-center text-gray-600 dark:text-gray-400">
             <p class="mb-4" data-translate-key="footer-copyright">&copy; 2025 Rekru.AI. All rights reserved.</p>
@@ -350,7 +400,68 @@
         </div>
     </footer>
 
-    <script>
+    <script type="module">
+        // Firebase SDKs
+        import { initializeApp } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-app.js";
+        import { getAuth, signInWithEmailAndPassword } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-auth.js";
+
+        // Global Firebase variables (Canvas provides these)
+        const firebaseConfig = {
+            apiKey: "AIzaSyA4Lrt3lRaasTfq1krCuYCshmMKWJEUd9c", // Provided API Key
+            authDomain: "rekruai2.firebaseapp.com",
+            projectId: "rekruai2",
+            storageBucket: "rekruai2.firebasestorage.app",
+            messagingSenderId: "722572420884",
+            appId: "1:722572420884:web:753e2a9708b04f23f98401",
+            measurementId: "G-B60KE54L70"
+        };
+
+        // Initialize Firebase
+        const app = initializeApp(firebaseConfig);
+        const auth = getAuth(app);
+
+        // Custom message box display function
+        window.displayMessageBox = (message, type = 'info') => {
+            const messageBox = document.getElementById('messageBox');
+            const messageBoxText = document.getElementById('messageBoxText');
+            const messageBoxClose = document.getElementById('messageBoxClose');
+
+            messageBoxText.textContent = message;
+            messageBox.className = `fixed inset-0 bg-gray-600 bg-opacity-50 flex items-center justify-center z-50 p-4 ${type === 'error' ? 'border-red-500' : 'border-indigo-500'}`;
+            messageBox.classList.remove('hidden');
+            messageBoxClose.focus(); // Set focus to the close button
+        };
+
+        document.getElementById('loginForm').addEventListener('submit', async (e) => {
+            e.preventDefault();
+            const email = document.getElementById('email').value;
+            const password = document.getElementById('password').value;
+
+            try {
+                await signInWithEmailAndPassword(auth, email, password);
+                window.displayMessageBox(translations[document.documentElement.lang]["login-success"] || 'Login successful! Redirecting to dashboard...', 'info');
+                // Redirect to a dashboard or home page after successful login
+                setTimeout(() => {
+                    window.location.href = '/index.html'; // Or your dashboard page
+                }, 1500);
+            } catch (error) {
+                console.error("Login error:", error);
+                let errorMessage = translations[document.documentElement.lang]["login-failed-generic"] || 'Login failed. Please check your credentials.';
+                if (error.code === 'auth/user-not-found' || error.code === 'auth/wrong-password') {
+                    errorMessage = translations[document.documentElement.lang]["login-invalid-credentials"] || 'Invalid email or password.';
+                } else if (error.code === 'auth/invalid-email') {
+                    errorMessage = translations[document.documentElement.lang]["login-invalid-email"] || 'Invalid email format.';
+                } else if (error.code === 'auth/user-disabled') {
+                    errorMessage = translations[document.documentElement.lang]["login-user-disabled"] || 'This account has been disabled.';
+                } else if (error.code === 'auth/network-request-failed') {
+                    errorMessage = translations[document.documentElement.lang]["login-network-error"] || 'Network error. Please check your internet connection.';
+                } else if (error.code === 'auth/requests-to-this-api-identitytoolkit-method-google.cloud.identitytoolkit.v1.authenticationservice.signinwithpassword-are-blocked.') {
+                    errorMessage = translations[document.documentElement.lang]["login-api-blocked"] || "Login failed. Please ensure 'Identity Toolkit API' is enabled in your Google Cloud Project and 'Email/Password' sign-in method is enabled in Firebase Authentication settings.";
+                }
+                window.displayMessageBox(errorMessage, 'error');
+            }
+        });
+
         // Dark Mode Toggle
         const darkModeToggle = document.getElementById('darkModeToggle');
         const sunIcon = document.getElementById('sunIcon');
@@ -412,13 +523,14 @@
             });
         }
 
-        // Dropdown functionality for desktop
+        // Universal Dropdown Toggles
         document.querySelectorAll('.dropdown-toggle').forEach(button => {
-            button.addEventListener('click', function() {
+            button.addEventListener('click', function(event) {
+                event.stopPropagation(); // Prevent click from closing immediately
                 const dropdownContent = this.nextElementSibling;
-                // Close other open dropdowns
+                // Close other open dropdowns at the same level
                 document.querySelectorAll('.dropdown-content').forEach(content => {
-                    if (content !== dropdownContent) {
+                    if (content !== dropdownContent && content.closest('.dropdown') === this.closest('.dropdown')) {
                         content.style.display = 'none';
                     }
                 });
@@ -426,10 +538,28 @@
             });
         });
 
-        // Close dropdowns when clicking outside
+        // Universal Sub-Dropdown Toggles
+        document.querySelectorAll('.dropdown-toggle-sub').forEach(button => {
+            button.addEventListener('click', function(event) {
+                event.stopPropagation(); // Prevent click from closing parent dropdown or other sub-dropdowns
+                const dropdownContentSub = this.nextElementSibling;
+                // Close other open sub-dropdowns
+                this.closest('.dropdown-content').querySelectorAll('.dropdown-content-sub').forEach(content => {
+                    if (content !== dropdownContentSub) {
+                        content.style.display = 'none';
+                    }
+                });
+                if (dropdownContentSub) dropdownContentSub.style.display = dropdownContentSub.style.display === 'block' ? 'none' : 'block';
+            });
+        });
+
+        // Close all dropdowns when clicking outside
         window.addEventListener('click', function(event) {
-            if (!event.target.matches('.dropdown-toggle') && !event.target.closest('.dropdown-content')) {
+            if (!event.target.matches('.dropdown-toggle') && !event.target.matches('.dropdown-toggle-sub') && !event.target.closest('.dropdown-content') && !event.target.closest('.dropdown-content-sub')) {
                 document.querySelectorAll('.dropdown-content').forEach(content => {
+                    content.style.display = 'none';
+                });
+                document.querySelectorAll('.dropdown-content-sub').forEach(content => {
                     content.style.display = 'none';
                 });
             }
@@ -439,7 +569,6 @@
         const hamburgerButton = document.getElementById('hamburgerButton');
         const closeMobileMenuButton = document.getElementById('closeMobileMenu');
         const mobileMenu = document.getElementById('mobileMenu');
-        const mobileMenuItems = document.querySelectorAll('.mobile-menu-item');
         const mobileDropdownToggles = document.querySelectorAll('.mobile-dropdown-toggle');
 
         if (hamburgerButton) { // Check if element exists
@@ -455,47 +584,24 @@
         }
 
         // Function to close mobile menu
-        function closeMobileMenu() {
+        window.closeMobileMenu = () => {
             if (mobileMenu) mobileMenu.classList.remove('is-open');
         }
 
-        // Close mobile menu when a link is clicked
-        mobileMenuItems.forEach(item => {
+        // Close mobile menu when a link is clicked within the mobile menu (for dropdown items)
+        mobileMenu.querySelectorAll('a').forEach(item => {
             item.addEventListener('click', () => {
-                closeMobileMenu();
+                window.closeMobileMenu();
             });
         });
 
-        // Toggle mobile dropdowns
+        // Toggle mobile dropdowns (for main level dropdowns in mobile menu like Features, Settings)
         mobileDropdownToggles.forEach(button => {
             button.addEventListener('click', function() {
                 const dropdownContent = this.nextElementSibling;
                 if (dropdownContent) dropdownContent.style.display = dropdownContent.style.display === 'block' ? 'none' : 'block';
             });
         });
-
-
-        // Scroll Animations
-        const animateOnScrollElements = document.querySelectorAll('.animate-on-scroll');
-        const animateCardElements = document.querySelectorAll('.animate-card');
-
-        const observerOptions = {
-            root: null, // viewport
-            rootMargin: '0px',
-            threshold: 0.1 // 10% of element visible
-        };
-
-        const observer = new IntersectionObserver((entries, observer) => {
-            entries.forEach(entry => {
-                if (entry.isIntersecting) {
-                    entry.target.classList.add('is-visible');
-                    observer.unobserve(entry.target); // Stop observing once visible
-                }
-            });
-        }, observerOptions);
-
-        animateOnScrollElements.forEach(el => observer.observe(el));
-        animateCardElements.forEach(el => observer.observe(el));
 
         // Language Translation
         const translations = {
@@ -509,16 +615,27 @@
                 "feature-jd-poster": "Posting JD in my Platforms",
                 "feature-jd-enhancer": "✨ JD Enhancer",
                 "nav-language": "Language",
-                "login-heading": "Login",
+                "nav-login": "Login",
+                "nav-signup": "Sign Up",
+                "nav-settings": "Settings",
+                "settings-dark-mode": "Light/Dark Mode",
+                "login-heading": "Login to Rekru.AI",
+                "login-email-label": "Email",
                 "login-password-label": "Password",
-                "login-submit-button": "Login",
+                "login-button": "Login",
                 "login-no-account": "Don't have an account?",
                 "login-signup-link": "Sign Up",
+                "login-success": "Login successful! Redirecting to dashboard...",
+                "login-failed-generic": "Login failed. Please check your credentials.",
+                "login-invalid-credentials": "Invalid email or password.",
+                "login-invalid-email": "Invalid email format.",
+                "login-user-disabled": "This account has been disabled.",
+                "login-network-error": "Network error. Please check your internet connection.",
+                "login-api-blocked": "Login failed. Please ensure 'Identity Toolkit API' is enabled in your Google Cloud Project and 'Email/Password' sign-in method is enabled in Firebase Authentication settings.",
                 "footer-copyright": "&copy; 2025 Rekru.AI. All rights reserved.",
                 "footer-privacy": "Privacy Policy",
                 "footer-terms": "Terms of Service",
-                "footer-sitemap": "Sitemap",
-                "contact-email-label": "Email" /* Added for login/signup forms */
+                "footer-sitemap": "Sitemap"
             },
             es: {
                 "logo-text": "Rekru.AI",
@@ -530,16 +647,27 @@
                 "feature-jd-poster": "Publicar Descripciones de Puesto en mis Plataformas",
                 "feature-jd-enhancer": "✨ Mejorador de Descripciones de Puesto",
                 "nav-language": "Idioma",
-                "login-heading": "Iniciar Sesión",
+                "nav-login": "Iniciar Sesión",
+                "nav-signup": "Registrarse",
+                "nav-settings": "Configuración",
+                "settings-dark-mode": "Modo Claro/Oscuro",
+                "login-heading": "Iniciar Sesión en Rekru.AI",
+                "login-email-label": "Correo Electrónico",
                 "login-password-label": "Contraseña",
-                "login-submit-button": "Iniciar Sesión",
+                "login-button": "Iniciar Sesión",
                 "login-no-account": "¿No tienes una cuenta?",
                 "login-signup-link": "Registrarse",
+                "login-success": "¡Inicio de sesión exitoso! Redirigiendo al panel...",
+                "login-failed-generic": "Error al iniciar sesión. Por favor, verifica tus credenciales.",
+                "login-invalid-credentials": "Correo electrónico o contraseña inválidos.",
+                "login-invalid-email": "Formato de correo electrónico inválido.",
+                "login-user-disabled": "Esta cuenta ha sido deshabilitada.",
+                "login-network-error": "Error de red. Por favor, verifica tu conexión a internet.",
+                "login-api-blocked": "Error al iniciar sesión. Por favor, asegúrate de que la 'API Identity Toolkit' esté habilitada en tu Proyecto de Google Cloud y el método de inicio de sesión 'Correo electrónico/Contraseña' esté habilitado en la configuración de Autenticación de Firebase.",
                 "footer-copyright": "&copy; 2025 Rekru.AI. Todos los derechos reservados.",
                 "footer-privacy": "Política de Privacidad",
                 "footer-terms": "Términos de Servicio",
-                "footer-sitemap": "Mapa del Sitio",
-                "contact-email-label": "Correo Electrónico" /* Added for login/signup forms */
+                "footer-sitemap": "Mapa del Sitio"
             },
             pt: {
                 "logo-text": "Rekru.AI",
@@ -551,26 +679,50 @@
                 "feature-jd-poster": "Publicar Descrição de Cargo nas Minhas Plataformas",
                 "feature-jd-enhancer": "✨ Otimizador de Descrição de Cargo",
                 "nav-language": "Idioma",
-                "login-heading": "Login",
+                "nav-login": "Entrar",
+                "nav-signup": "Cadastrar-se",
+                "nav-settings": "Configurações",
+                "settings-dark-mode": "Modo Claro/Escuro",
+                "login-heading": "Entrar no Rekru.AI",
+                "login-email-label": "Email",
                 "login-password-label": "Senha",
-                "login-submit-button": "Login",
+                "login-button": "Entrar",
                 "login-no-account": "Não tem uma conta?",
                 "login-signup-link": "Cadastrar-se",
+                "login-success": "Login bem-sucedido! Redirecionando para o painel...",
+                "login-failed-generic": "Falha no login. Por favor, verifique suas credenciais.",
+                "login-invalid-credentials": "Email ou senha inválidos.",
+                "login-invalid-email": "Formato de email inválido.",
+                "login-user-disabled": "Esta conta foi desativada.",
+                "login-network-error": "Erro de rede. Por favor, verifique sua conexão com a internet.",
+                "login-api-blocked": "Falha no login. Por favor, certifique-se de que a 'API Identity Toolkit' esteja habilitada em seu Projeto do Google Cloud e o método de login 'Email/Senha' esteja habilitado nas configurações de Autenticação do Firebase.",
                 "footer-copyright": "&copy; 2025 Rekru.AI. Todos os direitos reservados.",
                 "footer-privacy": "Política de Privacidade",
                 "footer-terms": "Termos de Serviço",
-                "footer-sitemap": "Mapa do Site",
-                "contact-email-label": "Email" /* Added for login/signup forms */
+                "footer-sitemap": "Mapa do Site"
             }
         };
 
-        function changeLanguage(lang) {
+        document.addEventListener('DOMContentLoaded', () => {
+            const savedLanguage = localStorage.getItem('selectedLanguage') || 'en';
+            window.changeLanguage(savedLanguage);
+
+            // Attach event listener for the message box close button
+            const messageBoxClose = document.getElementById('messageBoxClose');
+            if (messageBoxClose) {
+                messageBoxClose.addEventListener('click', () => {
+                    document.getElementById('messageBox').classList.add('hidden');
+                });
+            }
+        });
+
+        window.changeLanguage = (lang) => {
             const elements = document.querySelectorAll('[data-translate-key]');
             elements.forEach(element => {
                 const key = element.getAttribute('data-translate-key');
                 if (translations[lang] && translations[lang][key]) {
-                    if (key.includes('about-text')) { // Not present on this page, but kept for consistency
-                        element.innerHTML = translations[lang][key];
+                    if (element.tagName === 'INPUT' || element.tagName === 'TEXTAREA') {
+                        element.placeholder = translations[lang][key];
                     } else {
                         element.textContent = translations[lang][key];
                     }
@@ -579,11 +731,6 @@
             document.documentElement.lang = lang;
             localStorage.setItem('selectedLanguage', lang);
         }
-
-        document.addEventListener('DOMContentLoaded', () => {
-            const savedLanguage = localStorage.getItem('selectedLanguage') || 'en';
-            changeLanguage(savedLanguage);
-        });
     </script>
 </body>
 </html>
